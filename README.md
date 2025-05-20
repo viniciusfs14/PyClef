@@ -1,6 +1,9 @@
 
 
-![Logo do PyClef](logo.png)
+<div align="center">
+  <img src="assets/logo.png" alt="PyClef" width="300"/>
+</div>
+
 
 **PyClef** é uma ferramenta de código aberto desenvolvida com inteligência artificial e visão computacional para reconhecer partituras musicais a partir de imagens ou arquivos PDF, convertendo-as automaticamente em arquivos de áudio (`.mp3`) e MIDI (`.midi`). Utilizando algoritmos de ponta como o YOLO (You Only Look Once), PyClef tem como objetivo democratizar o acesso à música escrita e contribuir para sua preservação digital.
 
