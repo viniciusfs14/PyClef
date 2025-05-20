@@ -23,3 +23,8 @@ O reconhecimento óptico de partituras musicais (OMR - *Optical Music Recognitio
 - Traduzir a notação musical para arquivos `.MIDI` e `.mp3`
 - Desenvolver uma interface gráfica intuitiva (GUI)
 - Tornar a ferramenta gratuita, acessível e personalizável para fins educacionais e acadêmicos
+
+## 📄 Licença
+
+Este projeto está licenciado sob os termos da licença MIT.  
+Consulte o arquivo [LICENSE](LICENSE) para mais detalhes.
