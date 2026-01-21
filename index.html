@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="white">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PyClef | Neural Music Recognition</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container nav-content">
+            <div class="actions">
+                <button id="lang-switch" class="btn-ghost">
+                    <div class="flags-container">
+                        <img id="flag-br" src="https://flagcdn.com/w20/br.png" alt="Brasil" class="flag-img">
+                        <img id="flag-us" src="https://flagcdn.com/w20/us.png" alt="USA" class="flag-img">
+                    </div>
+                    <span id="lang-text">EN</span>
+                </button>
+                <button id="theme-switch" class="btn-ghost">
+                    <i id="theme-icon" class="fas fa-moon"></i>
+                </button>
+            </div>
+            <a href="https://github.com/viniciusfs14/PyClef" target="_blank" class="btn-github">
+                <i class="fab fa-github"></i> GitHub
+            </a>
+        </div>
+    </nav>
+
+    <main class="container">
+        <header class="hero-section">
+            <img id="main-logo" src="imgs/logo_white.png" alt="PyClef Logo" class="hero-logo">
+            
+            <div class="status-pill" data-i18n="status">Research Phase: YOLO11m Pure Inference</div>
+            <h1 data-i18n="hero-h1">The Future of <span>Sheet Music</span> Digitization.</h1>
+            <p data-i18n="hero-p">A high-performance OMR pipeline merging deep learning with digital signal processing principles.</p>
+        </header>
+
+        <section class="bento-grid">
+            <div class="bento-item tall">
+                <h3 data-i18n="ai-h3">Neural Engine</h3>
+                <p data-i18n="ai-p">Fine-tuned YOLO11m for sub-millimeter detection.</p>
+            </div>
+            <div class="bento-item wide">
+                <h3 data-i18n="dsp-h3">Signal Synthesis (DSP)</h3>
+                <p data-i18n="dsp-p">Converting spatial coordinates into discrete frequencies.</p>
+            </div>
+        </section>
+    </main>
+
+
+    <script src="script.js"></script>
+</body>
+</html>
