@@ -7,7 +7,9 @@ const content = {
         "ai-p": "Fine-tuned YOLO11m model optimized for sub-millimeter detection.",
         "dsp-h3": "Signal Synthesis (DSP)",
         "dsp-p": "Mathematical mapping of spatial coordinates into discrete Hz frequencies.",
-        "lang-btn": "EN"
+        "lang-btn": "EN",
+        "status-h3": "Project Status",
+        "status-p": "Neural Training: "
     },
     pt: {
         "status": "Fase de Pesquisa: Inferência Bruta YOLO11m",
@@ -17,7 +19,9 @@ const content = {
         "ai-p": "Modelo YOLO11m ajustado para detecção submilimétrica.",
         "dsp-h3": "Síntese de Sinais (DSP)",
         "dsp-p": "Mapeamento matemático de coordenadas espaciais em frequências Hz.",
-        "lang-btn": "PT"
+        "lang-btn": "PT",
+        "status-h3": "Status do Projeto",
+        "status-p": "Treinamento Neural: "
     }
 };
 
@@ -56,3 +60,4 @@ document.getElementById('theme-switch').addEventListener('click', () => {
         themeIcon.className = 'fas fa-moon';
     }
 });
+
