@@ -213,17 +213,17 @@ body {
 .progress-fill {
     height: 100%;
     background: var(--accent);
-    /* A mágica acontece aqui: o CSS lê a variável do HTML */
-    width: calc(var(--progress) * 1%); 
+    /* O valor 0% garante que ela não quebre se a variável falhar */
+    width: calc(var(--progress, 0) * 1%); 
     
     border-radius: 20px;
     box-shadow: 0 0 15px rgba(0, 151, 178, 0.3);
-    transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Adicionamos uma transição suave para o carregamento inicial */
+    transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
-
 /* Ajuste específico para garantir visibilidade no Modo Claro */
 [data-theme="light"] .progress-bar {
-    background: #e0e0e0; /* Cinza mais visível para fundo branco */
+    background: rgba(0, 0, 0, 0.1) !important;
 }
 
 [data-theme="light"] .status-card {
@@ -321,3 +321,54 @@ footer {
     color: var(--muted); 
     font-size: 0.85rem; 
 }
+
+/* --- TERMINAL ESTILO HACKER --- */
+.terminal-window {
+    background: #0d0d0d;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-top: 40px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+}
+
+.terminal-header {
+    background: #1a1a1a;
+    padding: 10px 15px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    border-bottom: 1px solid var(--border);
+}
+
+.terminal-buttons { display: flex; gap: 6px; }
+.terminal-buttons span { width: 10px; height: 10px; border-radius: 50%; }
+.terminal-buttons span:nth-child(1) { background: #ff5f56; }
+.terminal-buttons span:nth-child(2) { background: #ffbd2e; }
+.terminal-buttons span:nth-child(3) { background: #27c93f; }
+
+.terminal-title {
+    color: var(--muted);
+    font-family: monospace;
+    font-size: 0.75rem;
+}
+
+.terminal-body {
+    padding: 20px;
+    height: 250px;
+    overflow-y: auto;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.85rem;
+    line-height: 1.6;
+    color: #0071e3; /* Verde clássico de terminal */
+    text-shadow: 0 0 5px rgba(0, 255, 65, 0.2);
+}
+
+/* Scrollbar fina para o terminal */
+.terminal-body::-webkit-scrollbar { width: 5px; }
+.terminal-body::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; }
+
+/* Destaque para logs de sucesso */
+.log-info { color: var(--accent); }
+.log-success { color: #27c93f; font-weight: bold; }
+.log-warn { color: #ffbd2e; }
