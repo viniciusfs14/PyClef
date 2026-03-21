@@ -1,374 +1,102 @@
-/* --- CONFIGURAÇÕES DE TEMA --- */
 :root[data-theme="dark"] {
     --bg: #000000;
     --card-bg: #0a0a0a;
     --text: #ffffff;
-    --accent: #0097b2; /* Cyan Original da sua Logo */
+    --accent: #00d1f7;
     --border: rgba(255, 255, 255, 0.08);
     --muted: #888888;
+    --glass: rgba(0, 0, 0, 0.8);
 }
 
 :root[data-theme="light"] {
-    --bg: #f9f9fb;
+    --bg: #f5f5f7;
     --card-bg: #ffffff;
     --text: #1d1d1f;
     --accent: #0071e3;
-    --border: rgba(0, 0, 0, 0.05);
+    --border: rgba(0, 0, 0, 0.08);
     --muted: #666666;
+    --glass: rgba(255, 255, 255, 0.8);
 }
 
-/* --- ESTILOS GERAIS --- */
-* { 
-    margin: 0; 
-    padding: 0; 
-    box-sizing: border-box; 
-}
-
-html {
-    scroll-behavior: smooth;
-}
-
+* { margin: 0; padding: 0; box-sizing: border-box; }
 body { 
     background-color: var(--bg); 
     color: var(--text); 
     font-family: 'Inter', sans-serif; 
-    transition: background 0.3s, color 0.3s; 
-    overflow-x: hidden; /* Evita rolagem horizontal indesejada */
-    width: 100%;
-    word-wrap: break-word; /* Evita que palavras longas quebrem o layout */
+    transition: 0.3s; 
+    line-height: 1.6;
 }
 
-.container { 
-    max-width: 1000px; 
-    margin: 0 auto; 
-    padding: 0 24px; 
-}
+.container { max-width: 900px; margin: 0 auto; padding: 0 24px; }
 
-/* --- NAVBAR --- */
+/* NAVBAR */
 .navbar { 
-    height: 70px; 
+    height: 65px; 
     display: flex; 
     align-items: center; 
-    background: rgba(0,0,0,0.5); 
-    backdrop-filter: blur(10px); 
+    background: var(--glass); 
+    backdrop-filter: blur(15px); 
     position: sticky; 
     top: 0; 
     z-index: 100; 
     border-bottom: 1px solid var(--border); 
 }
-
-.nav-content { 
-    display: flex; 
-    justify-content: space-between; 
-    width: 100%; 
-    align-items: center;
-}
+.nav-content { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+.nav-left { display: flex; gap: 10px; }
 
 .btn-ghost { 
-    background: none; 
-    border: 1px solid var(--border); 
-    color: var(--text); 
-    padding: 6px 14px; 
-    border-radius: 6px; 
-    cursor: pointer; 
-    margin-right: 10px; 
-    font-size: 0.8rem; 
-    display: inline-flex;
-    align-items: center;
+    background: none; border: 1px solid var(--border); 
+    color: var(--text); padding: 7px 14px; 
+    border-radius: 8px; cursor: pointer; transition: 0.2s;
+    display: flex; align-items: center; gap: 8px; font-size: 0.8rem;
 }
+.btn-ghost:hover { background: var(--border); }
 
-.btn-github { 
-    color: var(--text); 
-    text-decoration: none; 
-    font-size: 0.9rem; 
-    font-weight: 500; 
-    display: flex;
-    align-items: center;
-    gap: 8px;
+.btn-github { color: var(--text); text-decoration: none; font-weight: 500; font-size: 0.9rem; }
+
+.flags-container { display: flex; gap: 4px; }
+.flag-img { width: 18px; border-radius: 2px; transition: 0.3s; }
+[data-lang="en"] #flag-br, [data-lang="pt"] #flag-us { opacity: 0.3; }
+
+/* HERO */
+.hero-section { padding: 100px 0 60px; text-align: center; }
+.hero-logo { height: 260px; width: auto; margin-bottom: 30px; }
+.hero-section h1 { font-size: 3.5rem; font-weight: 800; letter-spacing: -2px; line-height: 1.1; }
+.hero-section h1 span { color: var(--accent); }
+.hero-section p { color: var(--muted); font-size: 1.2rem; margin-top: 25px; max-width: 600px; margin-left: auto; margin-right: auto; }
+
+/* SUBMENUS (ACCORDION) */
+.details-section { margin-top: 40px; padding-bottom: 100px; }
+.menu-item { border-bottom: 1px solid var(--border); }
+.menu-header { 
+    width: 100%; padding: 30px 0; background: none; border: none; 
+    color: var(--text); display: flex; justify-content: space-between; 
+    align-items: center; cursor: pointer; transition: 0.3s;
 }
+.menu-header:hover { color: var(--accent); }
+.header-left { display: flex; align-items: center; gap: 20px; font-size: 1.3rem; font-weight: 600; }
+.chevron { transition: 0.4s ease; color: var(--muted); }
 
-/* --- BOTÃO DE IDIOMA E BANDEIRAS --- */
-#lang-switch {
-    display: flex;
-    align-items: center;
-    gap: 12px;
+.menu-content { 
+    max-height: 0; overflow: hidden; 
+    transition: max-height 0.5s cubic-bezier(0, 1, 0, 1); 
 }
+.menu-item.active .menu-content { max-height: 1200px; transition: max-height 1s ease-in-out; }
+.menu-item.active .chevron { transform: rotate(180deg); color: var(--accent); }
 
-.flags-container {
-    display: flex;
-    gap: 4px;
-    align-items: center;
+.content-inner { 
+    padding: 10px 0 50px 45px; 
+    display: grid; grid-template-columns: 1fr 1fr; gap: 40px; 
 }
+.detail-img { width: 100%; border-radius: 12px; border: 1px solid var(--border); }
+.code-snippet { background: #000; padding: 15px; border-radius: 8px; border: 1px solid var(--border); color: var(--accent); font-family: monospace; font-size: 0.85rem; }
+.tech-list { list-style: none; margin-top: 15px; font-size: 0.9rem; color: var(--muted); }
+.tech-list li { margin-bottom: 8px; display: flex; align-items: center; gap: 10px; }
+.tech-list i { color: var(--accent); font-size: 0.7rem; }
 
-.flag-img {
-    width: 22px;
-    height: auto;
-    border-radius: 2px;
-    transition: 0.3s opacity;
-}
+footer { padding: 50px 0; text-align: center; border-top: 1px solid var(--border); color: var(--muted); font-size: 0.8rem; }
 
-[data-lang="en"] #flag-br { opacity: 0.4; }
-[data-lang="pt"] #flag-us { opacity: 0.4; }
-
-/* --- HERO SECTION --- */
-.hero-section { 
-    padding: 80px 0 60px; 
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    align-items: center; 
-}
-
-.hero-logo {
-    height: 300px;          
-    width: auto;            
-    margin: 0 auto 40px;    
-    display: block;
-    transition: transform 0.5s ease;
-    max-width: 100%; /* Previne que a logo saia da tela em dispositivos pequenos */
-}
-
-.hero-logo:hover { 
-    transform: scale(1.05); 
-}
-
-.status-pill { 
-    display: inline-block; 
-    padding: 6px 16px; 
-    border: 1px solid var(--accent); 
-    color: var(--accent); 
-    font-size: 0.75rem; 
-    border-radius: 100px; 
-    font-family: monospace; 
-    margin-bottom: 24px; 
-    background: rgba(0, 151, 178, 0.05);
-}
-
-.hero-section h1 { 
-    font-size: 4.5rem; 
-    font-weight: 800; 
-    letter-spacing: -4px; 
-    line-height: 0.9; 
-}
-
-.hero-section h1 span { 
-    color: var(--accent); 
-}
-
-.hero-section p { 
-    color: var(--muted); 
-    font-size: 1.2rem; 
-    margin-top: 25px; 
-    max-width: 650px; 
-    margin-left: auto; 
-    margin-right: auto; 
-}
-
-/* --- BENTO GRID --- */
-.bento-grid { 
-    display: grid; 
-    grid-template-columns: repeat(3, 1fr); 
-    grid-auto-rows: minmax(200px, auto); 
-    gap: 16px; 
-    padding-bottom: 80px; 
-}
-
-.bento-item { 
-    background: var(--card-bg); 
-    border: 1px solid var(--border); 
-    border-radius: 24px; 
-    padding: 32px; 
-    display: flex; 
-    flex-direction: column; 
-    justify-content: flex-start; /* Mudado para o topo para acomodar textos longos */
-    transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
-    overflow: hidden;
-}
-
-.bento-item:hover { 
-    border-color: var(--accent); 
-    transform: translateY(-5px);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-}
-
-.tall { grid-row: span 2; }
-.wide { grid-column: span 2; }
-
-.status-card {
-    border: 1px solid var(--accent) !important;
-    position: relative;
-    background: var(--card-bg);
-}
-
-.progress-bar {
-    width: 100%;
-    height: 10px;
-    /* No modo claro fica um cinza suave, no escuro fica grafite */
-    background: var(--border); 
-    border-radius: 20px;
-    margin: 20px 0 10px;
-    overflow: hidden;
-}
-
-.progress-fill {
-    height: 100%;
-    background: var(--accent);
-    /* O valor 0% garante que ela não quebre se a variável falhar */
-    width: calc(var(--progress, 0) * 1%); 
-    
-    border-radius: 20px;
-    box-shadow: 0 0 15px rgba(0, 151, 178, 0.3);
-    /* Adicionamos uma transição suave para o carregamento inicial */
-    transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
-}
-/* Ajuste específico para garantir visibilidade no Modo Claro */
-[data-theme="light"] .progress-bar {
-    background: rgba(0, 0, 0, 0.1) !important;
-}
-
-[data-theme="light"] .status-card {
-    box-shadow: 0 4px 12px rgba(0, 151, 178, 0.1);
-}
-
-.icon-accent { 
-    color: var(--accent); 
-    font-size: 1.8rem; 
-    margin-bottom: 20px; 
-}
-
-.bento-item h3 { 
-    font-size: 1.2rem; 
-    margin-bottom: 12px; 
-    letter-spacing: -0.5px;
-}
-
-.bento-item p { 
-    font-size: 0.95rem; 
-    color: var(--muted); 
-    line-height: 1.5;
-}
-
-/* --- RESPONSIVIDADE CRÍTICA (MOBILE) --- */
 @media (max-width: 768px) {
-    .container {
-        padding: 0 20px;
-    }
-
-    .hero-section {
-        padding: 60px 0 40px;
-    }
-
-    .hero-logo {
-        height: 130px; 
-        margin-bottom: 30px;
-    }
-
-    .hero-section h1 {
-        font-size: 2.6rem; 
-        letter-spacing: -1.5px;
-        line-height: 1;
-        width: 100%;
-    }
-
-    .hero-section p {
-        font-size: 1.05rem;
-        margin-top: 20px;
-    }
-
-    .bento-grid {
-        grid-template-columns: 1fr; /* Coluna única no mobile */
-        grid-auto-rows: auto;
-        gap: 16px;
-    }
-
-    .bento-item.tall, 
-    .bento-item.wide {
-        grid-row: span 1;
-        grid-column: span 1;
-        min-height: auto;
-        padding: 24px;
-    }
-
-    .btn-github span {
-        display: none; /* Mantém apenas o ícone no mobile */
-    }
-
-    #lang-text {
-        font-size: 0.7rem;
-    }
+    .hero-section h1 { font-size: 2.5rem; }
+    .content-inner { grid-template-columns: 1fr; padding-left: 0; }
 }
-
-/* Correção para textos que estouram (Ex: Português) */
-@media (max-width: 480px) {
-    .hero-section h1 {
-        font-size: 2.1rem;
-    }
-    
-    .bento-item {
-        padding: 20px;
-    }
-    
-    .bento-item h3 {
-        font-size: 1.1rem;
-    }
-}
-
-/* --- FOOTER --- */
-footer { 
-    padding: 60px 0; 
-    text-align: center; 
-    border-top: 1px solid var(--border); 
-    color: var(--muted); 
-    font-size: 0.85rem; 
-}
-
-/* --- TERMINAL ESTILO HACKER --- */
-.terminal-window {
-    background: #0d0d0d;
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    overflow: hidden;
-    margin-top: 40px;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-}
-
-.terminal-header {
-    background: #1a1a1a;
-    padding: 10px 15px;
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    border-bottom: 1px solid var(--border);
-}
-
-.terminal-buttons { display: flex; gap: 6px; }
-.terminal-buttons span { width: 10px; height: 10px; border-radius: 50%; }
-.terminal-buttons span:nth-child(1) { background: #ff5f56; }
-.terminal-buttons span:nth-child(2) { background: #ffbd2e; }
-.terminal-buttons span:nth-child(3) { background: #27c93f; }
-
-.terminal-title {
-    color: var(--muted);
-    font-family: monospace;
-    font-size: 0.75rem;
-}
-
-.terminal-body {
-    padding: 20px;
-    height: 250px;
-    overflow-y: auto;
-    font-family: 'Courier New', Courier, monospace;
-    font-size: 0.85rem;
-    line-height: 1.6;
-    color: #0071e3; /* Verde clássico de terminal */
-    text-shadow: 0 0 5px rgba(0, 255, 65, 0.2);
-}
-
-/* Scrollbar fina para o terminal */
-.terminal-body::-webkit-scrollbar { width: 5px; }
-.terminal-body::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; }
-
-/* Destaque para logs de sucesso */
-.log-info { color: var(--accent); }
-.log-success { color: #27c93f; font-weight: bold; }
-.log-warn { color: #ffbd2e; }
