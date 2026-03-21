@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="pt" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
@@ -33,7 +33,7 @@
 
     <main class="container">
         <header class="hero-section">
-            <img id="main-logo" src="imgs/logo_white.png" alt="PyClef Logo" class="hero-logo">
+            <img id="main-logo" src="imgs/logo_black.png" alt="PyClef Logo" class="hero-logo">
             <h1 data-i18n="hero-h1">The Future of <span>Sheet Music</span> Digitization.</h1>
             <p data-i18n="hero-p">A high-performance OMR pipeline merging deep learning with digital signal processing principles.</p>
         </header>
@@ -52,7 +52,7 @@
                         <div class="text-side">
                             <p data-i18n="ai-detail">Fine-tuned YOLO11m model optimized for sub-millimeter detection of musical symbols.</p>
                             <div class="video-container">
-                                <iframe src="https://www.youtube.com/embed/uFrg0uD5Txw" title="Inference Demo" frameborder="0" allowfullscreen></iframe>
+                                <iframe src="https://www.youtube.com/embed/uFrg0uD5Txw" title="PyClef Demo" frameborder="0" allowfullscreen></iframe>
                             </div>
                         </div>
                     </div>
@@ -70,12 +70,12 @@
                 <div class="menu-content">
                     <div class="content-inner">
                         <div class="text-side">
-                            <p data-i18n="gui-detail">Modern interface developed in PySide6 for real-time interaction.</p>
+                            <p data-i18n="gui-detail">Modern interface developed in PySide6 for real-time interaction and visualization.</p>
                         </div>
                         <div class="visual-side">
                             <div class="image-grid">
-                                <img src="imgs/interface.png" alt="Main Dashboard" class="zoomable-img" onclick="openModal(this)">
-                                <img src="imgs/interface.png" alt="Detection View" class="zoomable-img" onclick="openModal(this)">
+                                <img src="imgs/interface.png" alt="Painel Principal" class="zoomable-img" role="button" onclick="openModal(this)">
+                                <img src="imgs/interface.png" alt="Visualização de Detecção" class="zoomable-img" role="button" onclick="openModal(this)">
                             </div>
                         </div>
                     </div>
@@ -93,7 +93,7 @@
                 <div class="menu-content">
                     <div class="content-inner">
                         <div class="text-side">
-                            <p data-i18n="dsp-detail">Mapping spatial coordinates into discrete frequencies.</p>
+                            <p data-i18n="dsp-detail">Mathematical mapping of spatial coordinates into discrete Hz frequencies.</p>
                             <div class="code-snippet">
                                 <pre>freq = 440 * Math.pow(2, (n - 49) / 12);</pre>
                             </div>
@@ -109,6 +109,12 @@
         <img class="modal-content" id="modalImg">
         <div id="caption"></div>
     </div>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 PyClef Project. Open Source.</p>
+        </div>
+    </footer>
 
     <script src="script.js"></script>
 </body>
