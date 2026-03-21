@@ -1,16 +1,19 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="white">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PyClef | Neural Music Recognition</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
     <nav class="navbar">
         <div class="container nav-content">
-            <div class="actions">
+            <div class="nav-left">
                 <button id="lang-switch" class="btn-ghost">
                     <div class="flags-container">
                         <img id="flag-br" src="https://flagcdn.com/w20/br.png" alt="Brasil" class="flag-img">
@@ -30,25 +33,81 @@
 
     <main class="container">
         <header class="hero-section">
-            <img id="main-logo" src="imgs/logo_white.png" alt="PyClef Logo" class="hero-logo">
-            
-            <div class="status-pill" data-i18n="status">Research Phase: YOLO11m Pure Inference</div>
+            <img id="main-logo" src="imgs/logo_black.png" alt="PyClef Logo" class="hero-logo">
             <h1 data-i18n="hero-h1">The Future of <span>Sheet Music</span> Digitization.</h1>
             <p data-i18n="hero-p">A high-performance OMR pipeline merging deep learning with digital signal processing principles.</p>
         </header>
 
-        <section class="bento-grid">
-            <div class="bento-item tall">
-                <h3 data-i18n="ai-h3">Neural Engine</h3>
-                <p data-i18n="ai-p">Fine-tuned YOLO11m for sub-millimeter detection.</p>
+        <section class="details-section">
+            <div class="menu-item">
+                <button class="menu-header" onclick="toggleMenu(this)">
+                    <div class="header-left">
+                        <i class="fas fa-brain icon-small"></i>
+                        <span data-i18n="ai-h3">Neural Engine</span>
+                    </div>
+                    <i class="fas fa-chevron-down chevron"></i>
+                </button>
+                <div class="menu-content">
+                    <div class="content-inner">
+                        <div class="text-side">
+                            <p data-i18n="ai-detail">Fine-tuned YOLO11m model optimized for sub-millimeter detection of musical symbols, recognizing clefs, notes, and rests with high precision.</p>
+                            <ul class="tech-list">
+                                <li><i class="fas fa-check"></i> Custom Dataset Training</li>
+                                <li><i class="fas fa-check"></i> Python & CUDA Acceleration</li>
+                            </ul>
+                        </div>
+                        <div class="visual-side">
+                            <img src="imgs/yolo_sample.png" alt="YOLO Detection" class="detail-img">
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="bento-item wide">
-                <h3 data-i18n="dsp-h3">Signal Synthesis (DSP)</h3>
-                <p data-i18n="dsp-p">Converting spatial coordinates into discrete frequencies.</p>
+
+            <div class="menu-item">
+                <button class="menu-header" onclick="toggleMenu(this)">
+                    <div class="header-left">
+                        <i class="fas fa-wave-square icon-small"></i>
+                        <span data-i18n="dsp-h3">Signal Synthesis (DSP)</span>
+                    </div>
+                    <i class="fas fa-chevron-down chevron"></i>
+                </button>
+                <div class="menu-content">
+                    <div class="content-inner">
+                        <div class="text-side">
+                            <p data-i18n="dsp-detail">Mathematical mapping of spatial coordinates into discrete Hz frequencies, converting visual notation into audible digital signals.</p>
+                            <div class="code-snippet">
+                                <pre>freq = 440 * Math.pow(2, (n - 49) / 12);</pre>
+                            </div>
+                        </div>
+                        <div class="visual-side">
+                            <img src="imgs/dsp_graph.png" alt="DSP Mapping" class="detail-img">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="menu-item">
+                <button class="menu-header" onclick="toggleMenu(this)">
+                    <div class="header-left">
+                        <i class="fas fa-terminal icon-small"></i>
+                        <span data-i18n="status-h3">Research & Status</span>
+                    </div>
+                    <i class="fas fa-chevron-down chevron"></i>
+                </button>
+                <div class="menu-content">
+                    <div class="content-inner">
+                        <p data-i18n="status-p">PyClef is currently in the Research Phase, focusing on pure inference and model refinement for complex sheet music layouts.</p>
+                    </div>
+                </div>
             </div>
         </section>
     </main>
 
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 PyClef Project. Open Source.</p>
+        </div>
+    </footer>
 
     <script src="script.js"></script>
 </body>
