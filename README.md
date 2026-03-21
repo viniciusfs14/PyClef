@@ -59,5 +59,5 @@ Unlike traditional tools, PyClef focuses on **pure inference** and sub-millimete
 Este projeto está licenciado sob a licença MIT - consulte o arquivo [LICENSE](LICENSE) para detalhes.
 
 <p align="center">
-Developed with ❤️ by <a href="https://github.com/viniciusfs14">Vinícius</a>
+Developed by <a href="https://github.com/viniciusfs14">Vinícius</a>
 </p>
