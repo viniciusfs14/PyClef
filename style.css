@@ -130,3 +130,21 @@ footer { padding: 50px 0; text-align: center; border-top: 1px solid var(--border
         margin-top: 15px;
     }
 }
+
+/* Grade de miniaturas dentro do submenu */
+.image-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.image-grid img {
+    width: 100%;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.image-grid img:hover {
+    transform: scale(1.05);
+}

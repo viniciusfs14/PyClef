@@ -8,6 +8,9 @@ const content = {
         "dsp-detail": "Mathematical mapping of spatial coordinates into discrete Hz frequencies, converting visual notation into audible digital signals.",
         "status-h3": "Research & Status",
         "status-p": "PyClef is currently in the Research Phase, focusing on pure inference and model refinement for complex sheet music layouts.",
+        "lang-btn": "EN",
+        "gui-h3": "Interface & UX",
+        "gui-detail": "A modern and intuitive interface developed in PySide6, designed to facilitate the visualization of detections and interaction with the sound synthesis engine.",
         "lang-btn": "EN"
     },
     pt: {
@@ -19,6 +22,9 @@ const content = {
         "dsp-detail": "Mapeamento matemático de coordenadas espaciais em frequências Hz discretas, convertendo notação visual em sinais digitais audíveis.",
         "status-h3": "Pesquisa & Status",
         "status-p": "O PyClef está atualmente na Fase de Pesquisa, focando em inferência pura e refinamento do modelo para layouts complexos.",
+        "lang-btn": "PT",
+        "gui-h3": "Interface & UX",
+        "gui-detail": "Uma interface moderna e intuitiva desenvolvida em PySide6, projetada para facilitar a visualização das detecções e a interação com o motor de síntese sonora.",
         "lang-btn": "PT"
     }
 };
