@@ -2,7 +2,7 @@
 <html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
     <title>PyClef | Neural Music Recognition</title>
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -33,7 +33,7 @@
 
     <main class="container">
         <header class="hero-section">
-            <img id="main-logo" src="imgs/logo_black.png" alt="PyClef Logo" class="hero-logo">
+            <img id="main-logo" src="imgs/logo_white.png" alt="PyClef Logo" class="hero-logo">
             <h1 data-i18n="hero-h1">The Future of <span>Sheet Music</span> Digitization.</h1>
             <p data-i18n="hero-p">A high-performance OMR pipeline merging deep learning with digital signal processing principles.</p>
         </header>
@@ -50,66 +50,13 @@
                 <div class="menu-content">
                     <div class="content-inner">
                         <div class="text-side">
-                            <p data-i18n="ai-detail">Fine-tuned YOLO11m model optimized for sub-millimeter detection of musical symbols, recognizing clefs, notes, and rests with high precision.</p>
-                            <ul class="tech-list">
-                                <li><i class="fas fa-check"></i> Custom Dataset Training</li>
-                                <li><i class="fas fa-check"></i> Python & CUDA Acceleration</li>
-                            </ul>
-                        </div>
-                        <div class="visual-side">
-                            <img src="imgs/yolo_sample.png" alt="YOLO Detection" class="detail-img">
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="menu-item">
-                <button class="menu-header" onclick="toggleMenu(this)">
-                    <div class="header-left">
-                        <i class="fas fa-wave-square icon-small"></i>
-                        <span data-i18n="dsp-h3">Signal Synthesis (DSP)</span>
-                    </div>
-                    <i class="fas fa-chevron-down chevron"></i>
-                </button>
-                <div class="menu-content">
-                    <div class="content-inner">
-                        <div class="text-side">
-                            <p data-i18n="dsp-detail">Mathematical mapping of spatial coordinates into discrete Hz frequencies, converting visual notation into audible digital signals.</p>
-                            <div class="code-snippet">
-                                <pre>freq = 440 * Math.pow(2, (n - 49) / 12);</pre>
+                            <p data-i18n="ai-detail">Fine-tuned YOLO11m model optimized for sub-millimeter detection of musical symbols.</p>
+                            <div class="video-container">
+                                <iframe src="https://www.youtube.com/embed/uFrg0uD5Txw" title="Inference Demo" frameborder="0" allowfullscreen></iframe>
                             </div>
                         </div>
-                        <div class="visual-side">
-                            <img src="imgs/dsp_graph.png" alt="DSP Mapping" class="detail-img">
-                        </div>
                     </div>
                 </div>
-            </div>
-
-            <div class="menu-item">
-                <button class="menu-header" onclick="toggleMenu(this)">
-                    <div class="header-left">
-                        <i class="fas fa-terminal icon-small"></i>
-                        <span data-i18n="status-h3">Research & Status</span>
-                    </div>
-                    <i class="fas fa-chevron-down chevron"></i>
-                </button>
-                <div class="menu-content">
-                    <div class="content-inner">
-                        <p data-i18n="status-p">PyClef is currently in the Research Phase, focusing on pure inference and model refinement for complex sheet music layouts.</p>
-                    </div>
-                    <div class="video-container">
-                        <iframe 
-                            src="https://www.youtube.com/embed/uFrg0uD5Txw" 
-                            title="PyClef Inference Demo" 
-                            frameborder="0" 
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                            referrerpolicy="strict-origin-when-cross-origin" 
-                            allowfullscreen>
-                        </iframe>
-                    </div>
-                </div>
-                
             </div>
 
             <div class="menu-item">
@@ -123,16 +70,32 @@
                 <div class="menu-content">
                     <div class="content-inner">
                         <div class="text-side">
-                            <p data-i18n="gui-detail">Uma interface moderna e intuitiva desenvolvida em PySide6, projetada para facilitar a visualização das detecções e a interação com o motor de síntese sonora.</p>
-                            <ul class="tech-list">
-                                <li><i class="fas fa-check"></i> Design Responsivo e Minimalista</li>
-                                <li><i class="fas fa-check"></i> Visualização em tempo real do YOLO</li>
-                            </ul>
+                            <p data-i18n="gui-detail">Modern interface developed in PySide6 for real-time interaction.</p>
                         </div>
                         <div class="visual-side">
                             <div class="image-grid">
-                                <img src="imgs/interface.png" alt="Main Screen">
-                                <img src="imgs/interface.png" alt="Detection Screen">
+                                <img src="imgs/interface.png" alt="Main Dashboard" class="zoomable-img" onclick="openModal(this)">
+                                <img src="imgs/interface.png" alt="Detection View" class="zoomable-img" onclick="openModal(this)">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="menu-item">
+                <button class="menu-header" onclick="toggleMenu(this)">
+                    <div class="header-left">
+                        <i class="fas fa-wave-square icon-small"></i>
+                        <span data-i18n="dsp-h3">Signal Synthesis</span>
+                    </div>
+                    <i class="fas fa-chevron-down chevron"></i>
+                </button>
+                <div class="menu-content">
+                    <div class="content-inner">
+                        <div class="text-side">
+                            <p data-i18n="dsp-detail">Mapping spatial coordinates into discrete frequencies.</p>
+                            <div class="code-snippet">
+                                <pre>freq = 440 * Math.pow(2, (n - 49) / 12);</pre>
                             </div>
                         </div>
                     </div>
@@ -141,11 +104,11 @@
         </section>
     </main>
 
-    <footer>
-        <div class="container">
-            <p>&copy; 2026 PyClef Project. Open Source.</p>
-        </div>
-    </footer>
+    <div id="imageModal" class="modal" onclick="closeModal()">
+        <span class="close-modal">&times;</span>
+        <img class="modal-content" id="modalImg">
+        <div id="caption"></div>
+    </div>
 
     <script src="script.js"></script>
 </body>
