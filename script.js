@@ -5,7 +5,12 @@ const content = {
         "ai-h3": "Neural Engine",
         "ai-detail": "Fine-tuned YOLO11m model optimized for sub-millimeter detection.",
         "gui-h3": "Interface & UX",
-        "gui-detail": "Modern interface developed in PySide6 for real-time interaction.",
+        "gui-detail": "An intuitive experience designed for musicians and developers. Simplicity in every click.",
+        "gui-f1": "Minimalist Design",
+        "gui-f2": "Direct Workflow",
+        "gui-f3": "Real-time Feedback",
+        "gui-img-1": "Main Dashboard",
+        "gui-img-2": "Native Dark Mode",
         "dsp-h3": "Signal Synthesis",
         "dsp-detail": "Mapping spatial coordinates into discrete Hz frequencies.",
         "lang-btn": "EN"
@@ -16,7 +21,12 @@ const content = {
         "ai-h3": "Motor Neural",
         "ai-detail": "Modelo YOLO11m ajustado para detecção submilimétrica.",
         "gui-h3": "Interface & UX",
-        "gui-detail": "Interface moderna em PySide6 para interação em tempo real.",
+        "gui-detail": "Uma experiência intuitiva projetada para músicos e desenvolvedores. Simplicidade em cada clique.",
+        "gui-f1": "Design Minimalista",
+        "gui-f2": "Fluxo de Trabalho Direto",
+        "gui-f3": "Feedback em Tempo Real",
+        "gui-img-1": "Painel Principal",
+        "gui-img-2": "Modo Escuro Nativo",
         "dsp-h3": "Síntese de Sinais",
         "dsp-detail": "Mapeamento de coordenadas espaciais em frequências Hz.",
         "lang-btn": "PT"
@@ -25,7 +35,6 @@ const content = {
 
 let currentLang = 'en';
 
-// Troca de Idioma
 document.getElementById('lang-switch').addEventListener('click', () => {
     currentLang = currentLang === 'en' ? 'pt' : 'en';
     document.querySelectorAll('[data-i18n]').forEach(el => {
@@ -35,7 +44,6 @@ document.getElementById('lang-switch').addEventListener('click', () => {
     document.getElementById('lang-text').innerText = content[currentLang]["lang-btn"];
 });
 
-// Troca de Tema
 document.getElementById('theme-switch').addEventListener('click', () => {
     const html = document.documentElement;
     const isDark = html.getAttribute('data-theme') === 'dark';
@@ -45,7 +53,6 @@ document.getElementById('theme-switch').addEventListener('click', () => {
     document.getElementById('main-logo').src = newTheme === 'light' ? 'imgs/logo_white.png' : 'imgs/logo_black.png';
 });
 
-// Menu Expansível
 function toggleMenu(header) {
     const item = header.parentElement;
     const isActive = item.classList.contains('active');
@@ -53,20 +60,26 @@ function toggleMenu(header) {
     if (!isActive) item.classList.add('active');
 }
 
-// Lógica do Modal de Zoom (Reforçada para Mobile)
+function copyInstall() {
+    const text = document.getElementById('install-command').innerText;
+    navigator.clipboard.writeText(text).then(() => {
+        const icon = document.querySelector('.copy-btn i');
+        icon.className = 'fas fa-check';
+        icon.style.color = 'var(--accent)';
+        setTimeout(() => {
+            icon.className = 'far fa-copy';
+            icon.style.color = '';
+        }, 2000);
+    });
+}
+
 const modal = document.getElementById("imageModal");
 const modalImg = document.getElementById("modalImg");
-const captionText = document.getElementById("caption");
 
 function openModal(img) {
     modalImg.src = img.src;
-    if (captionText) captionText.innerHTML = img.alt;
-    
     modal.style.display = "flex";
-    setTimeout(() => {
-        modal.classList.add('active');
-    }, 10);
-    
+    setTimeout(() => modal.classList.add('active'), 10);
     document.body.style.overflow = 'hidden';
 }
 
@@ -78,7 +91,8 @@ function closeModal() {
     }, 300);
 }
 
-// Fechar com tecla Esc
-document.addEventListener('keydown', (e) => {
-    if (e.key === "Escape") closeModal();
+// Força a atualização dos textos conforme o currentLang ao carregar a página
+document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (content[currentLang][key]) el.innerHTML = content[currentLang][key];
 });
