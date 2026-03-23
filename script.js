@@ -5,7 +5,7 @@ const content = {
         "ai-h3": "Neural Engine",
         "ai-detail": "Fine-tuned YOLO11m model optimized for sub-millimeter detection.",
         "gui-h3": "Interface & UX",
-        "gui-detail": "An intuitive experience designed for musicians and developers. Simplicity in every click.",
+        "gui-detail": "An intuitive experience designed for musicians and developers.",
         "gui-f1": "Minimalist Design",
         "gui-f2": "Direct Workflow",
         "gui-f3": "Real-time Feedback",
@@ -21,7 +21,7 @@ const content = {
         "ai-h3": "Motor Neural",
         "ai-detail": "Modelo YOLO11m ajustado para detecção submilimétrica.",
         "gui-h3": "Interface & UX",
-        "gui-detail": "Uma experiência intuitiva projetada para músicos e desenvolvedores. Simplicidade em cada clique.",
+        "gui-detail": "Uma experiência intuitiva projetada para músicos e desenvolvedores.",
         "gui-f1": "Design Minimalista",
         "gui-f2": "Fluxo de Trabalho Direto",
         "gui-f3": "Feedback em Tempo Real",
@@ -35,15 +35,22 @@ const content = {
 
 let currentLang = 'en';
 
-document.getElementById('lang-switch').addEventListener('click', () => {
-    currentLang = currentLang === 'en' ? 'pt' : 'en';
+// Função unificada para atualizar textos
+function updateTexts() {
     document.querySelectorAll('[data-i18n]').forEach(el => {
         const key = el.getAttribute('data-i18n');
         if (content[currentLang][key]) el.innerHTML = content[currentLang][key];
     });
     document.getElementById('lang-text').innerText = content[currentLang]["lang-btn"];
+}
+
+// Troca de Idioma
+document.getElementById('lang-switch').addEventListener('click', () => {
+    currentLang = currentLang === 'en' ? 'pt' : 'en';
+    updateTexts();
 });
 
+// Troca de Tema
 document.getElementById('theme-switch').addEventListener('click', () => {
     const html = document.documentElement;
     const isDark = html.getAttribute('data-theme') === 'dark';
@@ -91,8 +98,5 @@ function closeModal() {
     }, 300);
 }
 
-// Força a atualização dos textos conforme o currentLang ao carregar a página
-document.querySelectorAll('[data-i18n]').forEach(el => {
-    const key = el.getAttribute('data-i18n');
-    if (content[currentLang][key]) el.innerHTML = content[currentLang][key];
-});
+// Inicializar textos ao carregar
+window.onload = updateTexts;

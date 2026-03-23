@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt" data-theme="dark">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
@@ -47,7 +47,7 @@
             <div class="code-container">
                 <span class="prompt">$</span>
                 <code id="install-command">pip install pyclef</code>
-                <button class="copy-btn" onclick="copyInstall()" title="Copiar comando">
+                <button class="copy-btn" onclick="copyInstall()" title="Copy command">
                     <i class="far fa-copy"></i>
                 </button>
             </div>
@@ -56,7 +56,7 @@
         <section class="details-section">
             <div class="menu-item">
                 <button class="menu-header" onclick="toggleMenu(this)">
-                    <div class="header-left">
+                    <div class="header-left-item">
                         <i class="fas fa-brain icon-small"></i>
                         <span data-i18n="ai-h3">Neural Engine</span>
                     </div>
@@ -76,7 +76,7 @@
 
             <div class="menu-item">
                 <button class="menu-header" onclick="toggleMenu(this)">
-                    <div class="header-left">
+                    <div class="header-left-item">
                         <i class="fas fa-desktop icon-small"></i>
                         <span data-i18n="gui-h3">Interface & UX</span>
                     </div>
@@ -94,11 +94,11 @@
                         </div>
                         <div class="showcase-gallery">
                             <div class="showcase-card">
-                                <img src="imgs/interface.png" alt="Interface Principal" class="zoomable-img" onclick="openModal(this)">
+                                <img src="imgs/interface.png" alt="Main Interface" class="zoomable-img" onclick="openModal(this)">
                                 <span data-i18n="gui-img-1">Main Dashboard</span>
                             </div>
                             <div class="showcase-card">
-                                <img src="imgs/interface.png" alt="Modo Escuro Nativo" class="zoomable-img" onclick="openModal(this)">
+                                <img src="imgs/interface.png" alt="Native Dark Mode" class="zoomable-img" onclick="openModal(this)">
                                 <span data-i18n="gui-img-2">Native Dark Mode</span>
                             </div>
                         </div>
@@ -108,7 +108,7 @@
 
             <div class="menu-item">
                 <button class="menu-header" onclick="toggleMenu(this)">
-                    <div class="header-left">
+                    <div class="header-left-item">
                         <i class="fas fa-wave-square icon-small"></i>
                         <span data-i18n="dsp-h3">Signal Synthesis</span>
                     </div>
@@ -131,12 +131,11 @@
     <div id="imageModal" class="modal" onclick="closeModal()">
         <span class="close-modal">&times;</span>
         <img class="modal-content" id="modalImg">
-        <div id="caption"></div>
     </div>
 
     <footer class="footer-main">
         <div class="container footer-content">
-            <p>&copy; 2026 PyClef Project. Open Source.</p>
+            <p>&copy; 2026 PyClef, by Vinícius Silvestre</p>
         </div>
     </footer>
 
