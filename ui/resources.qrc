@@ -1,0 +1,11 @@
+<RCC>
+  <qresource prefix="newPrefix">
+    <file>site.png</file>
+    <file>homeLogo.png</file>
+    <file>vinicius.png</file>
+    <file>arquive.png</file>
+    <file>partiture.png</file>
+    <file>option.png</file>
+    <file>logo.png</file>
+  </qresource>
+</RCC>
