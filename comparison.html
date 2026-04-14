@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <title>Comparação YOLO - PyClef</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="imgs/logo_black.png">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container nav-content">
+            <div class="nav-left">
+                <button id="lang-switch" class="btn-ghost">
+                    <div class="flags-container">
+                        <img id="flag-br" src="https://flagcdn.com/w20/br.png" alt="Brasil" class="flag-img">
+                        <img id="flag-us" src="https://flagcdn.com/w20/us.png" alt="USA" class="flag-img">
+                    </div>
+                    <span id="lang-text">EN</span>
+                </button>
+                <button id="theme-switch" class="btn-ghost">
+                    <i id="theme-icon" class="fas fa-moon"></i>
+                </button>
+            </div>
+
+            <div class="nav-center">
+                <a href="index.html" class="nav-brand">PyClef</a>
+            </div>
+
+            <a href="https://github.com/viniciusfs14/PyClef" target="_blank" class="btn-github">
+                <i class="fab fa-github"></i> GitHub
+            </a>
+        </div>
+    </nav>
+
+    <main class="container">
+        <header class="hero-section">
+            <h1 data-i18n="comp-h1">Comparação entre YOLOv11s e YOLOv11l</h1>
+            <p data-i18n="comp-p">Análise comparativa das variantes YOLOv11s (usada no PyClef) e YOLOv11l, baseada no artigo científico, avaliando impacto do tamanho do modelo em desempenho e custo computacional.</p>
+        </header>
+
+        <section class="comparison-section">
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Métrica</th>
+                        <th>YOLOv11s (PyClef)</th>
+                        <th>YOLOv11l</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>mAP@[0.5:0.95]</td>
+                        <td>0.4126</td>
+                        <td>0.5138</td>
+                    </tr>
+                    <tr>
+                        <td>Taxa de Reconstrução de Altura (TRA)</td>
+                        <td>0.04</td>
+                        <td>0.08</td>
+                    </tr>
+                    <tr>
+                        <td>Tamanho do Modelo</td>
+                        <td>Menor</td>
+                        <td>Maior</td>
+                    </tr>
+                    <tr>
+                        <td>Tempo de Treinamento</td>
+                        <td>Menor</td>
+                        <td>Maior</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div style="margin: 40px 0;">
+                <canvas id="comparisonChart" width="400" height="200"></canvas>
+            </div>
+
+            <div class="comparison-text">
+                <h2 data-i18n="analysis-h2">Análise</h2>
+                <p data-i18n="analysis-p1">A variante YOLOv11L apresenta melhor desempenho em termos de mAP@[0.5:0.95] (0.5138 vs 0.4126), indicando maior precisão na detecção de objetos. No entanto, isso vem com um custo computacional maior, incluindo tamanho de modelo maior e tempo de treinamento mais longo. A YOLOv11s foi escolhida para o PyClef devido ao equilíbrio entre desempenho e eficiência, especialmente em cenários de alta densidade simbólica.</p>
+                <p data-i18n="analysis-p2">A Taxa de Reconstrução de Altura (TRA) mostra valores baixos para ambas as variantes sem a heurística estrutural, destacando a necessidade do módulo híbrido para melhorar a reconstrução musical.</p>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer-main">
+        <div class="container footer-content">
+            <p>&copy; 2026 PyClef, by Vinícius Silvestre</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script>
+        const ctx = document.getElementById('comparisonChart').getContext('2d');
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        const chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Sem Modelagem Estrutural', 'Com Modelagem Estrutural'],
+                datasets: [{
+                    label: 'Precisão de Altura (%)',
+                    data: [8, 94],
+                    backgroundColor: [
+                        isDark ? 'rgba(255, 99, 132, 0.8)' : 'rgba(255, 99, 132, 0.8)',
+                        isDark ? 'rgba(0, 209, 247, 0.8)' : 'rgba(0, 113, 227, 0.8)'
+                    ],
+                    borderColor: [
+                        isDark ? 'rgba(255, 99, 132, 1)' : 'rgba(255, 99, 132, 1)',
+                        isDark ? 'rgba(0, 209, 247, 1)' : 'rgba(0, 113, 227, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: isDark ? '#ffffff' : '#1d1d1f'
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            color: isDark ? '#ffffff' : '#1d1d1f'
+                        },
+                        grid: {
+                            color: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            color: isDark ? '#ffffff' : '#1d1d1f'
+                        },
+                        grid: {
+                            color: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Update chart on theme change
+        document.getElementById('theme-switch').addEventListener('click', () => {
+            setTimeout(() => {
+                const newIsDark = document.documentElement.getAttribute('data-theme') === 'dark';
+                chart.data.datasets[0].backgroundColor = [
+                    newIsDark ? 'rgba(255, 99, 132, 0.8)' : 'rgba(255, 99, 132, 0.8)',
+                    newIsDark ? 'rgba(0, 209, 247, 0.8)' : 'rgba(0, 113, 227, 0.8)'
+                ];
+                chart.data.datasets[0].borderColor = [
+                    newIsDark ? 'rgba(255, 99, 132, 1)' : 'rgba(255, 99, 132, 1)',
+                    newIsDark ? 'rgba(0, 209, 247, 1)' : 'rgba(0, 113, 227, 1)'
+                ];
+                chart.options.plugins.legend.labels.color = newIsDark ? '#ffffff' : '#1d1d1f';
+                chart.options.scales.y.ticks.color = newIsDark ? '#ffffff' : '#1d1d1f';
+                chart.options.scales.x.ticks.color = newIsDark ? '#ffffff' : '#1d1d1f';
+                chart.options.scales.y.grid.color = newIsDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+                chart.options.scales.x.grid.color = newIsDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+                chart.update();
+            }, 100);
+        });
+    </script>
+</body>
+</html>

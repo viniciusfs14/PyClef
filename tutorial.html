@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <title>Tutorial - PyClef</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
+    <link rel="icon" type="image/png" href="imgs/logo_black.png">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container nav-content">
+            <div class="nav-left">
+                <button id="lang-switch" class="btn-ghost">
+                    <div class="flags-container">
+                        <img id="flag-br" src="https://flagcdn.com/w20/br.png" alt="Brasil" class="flag-img">
+                        <img id="flag-us" src="https://flagcdn.com/w20/us.png" alt="USA" class="flag-img">
+                    </div>
+                    <span id="lang-text">EN</span>
+                </button>
+                <button id="theme-switch" class="btn-ghost">
+                    <i id="theme-icon" class="fas fa-moon"></i>
+                </button>
+            </div>
+
+            <div class="nav-center">
+                <a href="index.html" class="nav-brand">PyClef</a>
+            </div>
+
+            <a href="https://github.com/viniciusfs14/PyClef" target="_blank" class="btn-github">
+                <i class="fab fa-github"></i> GitHub
+            </a>
+        </div>
+    </nav>
+
+    <main class="container">
+        <header class="hero-section">
+            <h1 data-i18n="tutorial-h1">How to Use PyClef</h1>
+            <p data-i18n="tutorial-p">A step-by-step guide to get started with PyClef for optical music recognition.</p>
+        </header>
+
+        <section class="tutorial-section">
+            <div class="tutorial-step">
+                <h2 data-i18n="step1-h2">1. Installation</h2>
+                <p data-i18n="step1-p">Install PyClef using pip:</p>
+                <div class="code-container code-container-simple">
+                    <span class="prompt">$</span>
+                    <code>pip install pyclef</code>
+                </div>
+            </div>
+
+            <div class="tutorial-step">
+                <h2 data-i18n="step2-h2">2. Import the Library</h2>
+                <p data-i18n="step2-p">Import PyClef in your Python script:</p>
+                <pre><code class="language-python">import pyclef</code></pre>
+            </div>
+
+            <div class="tutorial-step">
+                <h2 data-i18n="step3-h2">3. Load Your Sheet Music</h2>
+                <p data-i18n="step3-p">Load an image of sheet music:</p>
+                <pre><code class="language-python">omr = pyclef.OMR()
+image = omr.load_image('path/to/sheet_music.png')</code></pre>
+            </div>
+
+            <div class="tutorial-step">
+                <h2 data-i18n="step4-h2">4. Process the Image</h2>
+                <p data-i18n="step4-p">Run the OMR pipeline:</p>
+                <pre><code class="language-python">result = omr.process(image)
+print(result)</code></pre>
+            </div>
+
+            <div class="tutorial-step">
+                <h2 data-i18n="step5-h2">5. Export Results</h2>
+                <p data-i18n="step5-p">Save the recognized music data:</p>
+                <pre><code class="language-python">omr.export(result, 'output.mid')</code></pre>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer-main">
+        <div class="container footer-content">
+            <p>&copy; 2026 PyClef, by Vinícius Silvestre</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+</body>
+</html>
