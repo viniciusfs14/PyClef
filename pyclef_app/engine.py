@@ -6,6 +6,8 @@ import re
 import tkinter as tk
 import urllib.error
 import urllib.request
+import shutil
+import zipfile
 from pathlib import Path
 from tkinter import filedialog, simpledialog
 from ultralytics import YOLO
@@ -29,6 +31,7 @@ PROGRESS_MESSAGES = {
     "pt": {
         "loading_model": "Carregando modelo de reconhecimento...",
         "downloading_model": "Baixando modelo PyClef... {downloaded_mb}/{total_mb} MB",
+        "extracting_model": "Extraindo modelo PyClef...",
         "model_ready": "Modelo pronto.",
         "preparing_pages": "Preparando paginas da partitura...",
         "processing_page": "Processando pagina {page}...",
@@ -46,6 +49,7 @@ PROGRESS_MESSAGES = {
     "en": {
         "loading_model": "Loading recognition model...",
         "downloading_model": "Downloading PyClef model... {downloaded_mb}/{total_mb} MB",
+        "extracting_model": "Extracting PyClef model...",
         "model_ready": "Model ready.",
         "preparing_pages": "Preparing score pages...",
         "processing_page": "Processing page {page}...",
@@ -107,12 +111,28 @@ def ensure_model_file(progress):
                         downloaded_mb=downloaded_mb,
                         total_mb=total_mb,
                     )
-        temp_path.replace(model_path)
-    except (urllib.error.URLError, OSError) as exc:
+        if config.MODEL_URL.lower().split("?", 1)[0].endswith(".zip"):
+            progress("extracting_model", 7)
+            with zipfile.ZipFile(temp_path) as archive:
+                candidates = [
+                    name
+                    for name in archive.namelist()
+                    if Path(name).name == "best.pt" and not name.endswith("/")
+                ]
+                if not candidates:
+                    raise FileNotFoundError(
+                        "The downloaded model archive does not contain best.pt."
+                    )
+                with archive.open(candidates[0]) as source, model_path.open("wb") as target:
+                    shutil.copyfileobj(source, target)
+            temp_path.unlink()
+        else:
+            temp_path.replace(model_path)
+    except (urllib.error.URLError, OSError, zipfile.BadZipFile) as exc:
         if temp_path.exists():
             temp_path.unlink()
         raise RuntimeError(
-            "Could not download the PyClef model. Upload best.pt to the configured "
+            "Could not download the PyClef model. Upload best.pt.zip to the configured "
             "release URL or set PYCLEF_MODEL_PATH to a local model file. "
             f"URL: {config.MODEL_URL}"
         ) from exc

@@ -24,6 +24,8 @@ start_button_frame_*.png
 model/train*/
 model/**/runs/
 pyclef_app/model/*.pt
+pyclef_app/model/*.zip
+pyclef_app/model/*.rar
 
 *.egg-info/
 build/

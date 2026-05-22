@@ -31,11 +31,17 @@ On first processing, PyClef looks for the model in this order:
 By default, `PYCLEF_MODEL_URL` points to the PyClef GitHub Release asset:
 
 ```text
-https://github.com/viniciusfs14/PyClef/releases/download/model-v1.0.0/best.pt
+https://github.com/viniciusfs14/PyClef/releases/download/model-v1.0.0/best.pt.zip
 ```
 
-Create that release and attach `best.pt` to make the download automatic for
+Create that release and attach `best.pt.zip` to make the download automatic for
 users.
+
+On Windows, you can create the release asset with:
+
+```powershell
+Compress-Archive -Path .\pyclef_app\model\best.pt -DestinationPath .\best.pt.zip -Force
+```
 
 For manual setup, place `best.pt` here:
 

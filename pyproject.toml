@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pyclef"
-version = "1.0.1"
+version = "1.0.2"
 description = "Desktop OMR tool for turning sheet music into annotations, audio, MIDI, and synchronized video."
 readme = "README.md"
 requires-python = ">=3.10"

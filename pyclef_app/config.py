@@ -7,7 +7,7 @@ PACKAGE_MODEL = BASE_DIR / "model" / "best.pt"
 MODEL_CACHE_DIR = Path(os.environ.get("PYCLEF_MODEL_DIR", Path.home() / ".pyclef" / "models"))
 MODEL_URL = os.environ.get(
     "PYCLEF_MODEL_URL",
-    "https://github.com/viniciusfs14/PyClef/releases/download/model-v1.0.0/best.pt",
+    "https://github.com/viniciusfs14/PyClef/releases/download/model-v1.0.0/best.pt.zip",
 )
 YOLO_MODEL = Path(os.environ["PYCLEF_MODEL_PATH"]) if os.environ.get("PYCLEF_MODEL_PATH") else (
     PACKAGE_MODEL if PACKAGE_MODEL.exists() else MODEL_CACHE_DIR / "best.pt"
