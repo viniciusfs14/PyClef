@@ -1,0 +1,9 @@
+include README.md
+include pyclef.py
+recursive-include pyclef_app/ui *.png *.ui *.qrc
+include pyclef_app/model/README.md
+exclude pyclef_app/model/*.pt
+global-exclude __pycache__/*
+global-exclude *.py[cod]
+global-exclude *.mp3 *.mp4 *.mid
+global-exclude traducao_musical_p*.jpg detection_page_*.jpg translated_page_*.jpg
