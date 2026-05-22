@@ -22,14 +22,29 @@ pyclef
 The YOLO model is not included in the PyPI package because it is larger than the
 default file limits for GitHub and PyPI.
 
-Place `best.pt` here:
+On first processing, PyClef looks for the model in this order:
+
+1. `PYCLEF_MODEL_PATH`, if set.
+2. The user cache at `~/.pyclef/models/best.pt`.
+3. Automatic download from `PYCLEF_MODEL_URL`.
+
+By default, `PYCLEF_MODEL_URL` points to the PyClef GitHub Release asset:
 
 ```text
-pyclef_app/model/best.pt
+https://github.com/viniciusfs14/PyClef/releases/download/model-v1.0.0/best.pt
 ```
 
-Or set the environment variable `PYCLEF_MODEL_PATH` to the full path of the
-model file before starting PyClef.
+Create that release and attach `best.pt` to make the download automatic for
+users.
+
+For manual setup, place `best.pt` here:
+
+```text
+~/.pyclef/models/best.pt
+```
+
+Or set `PYCLEF_MODEL_PATH` to the full path of the model file before starting
+PyClef.
 
 ## External requirements
 

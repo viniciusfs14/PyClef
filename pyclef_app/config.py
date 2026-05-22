@@ -3,7 +3,15 @@ from pathlib import Path
 
 
 BASE_DIR = Path(__file__).resolve().parent
-YOLO_MODEL = Path(os.environ.get("PYCLEF_MODEL_PATH", BASE_DIR / "model" / "best.pt"))
+PACKAGE_MODEL = BASE_DIR / "model" / "best.pt"
+MODEL_CACHE_DIR = Path(os.environ.get("PYCLEF_MODEL_DIR", Path.home() / ".pyclef" / "models"))
+MODEL_URL = os.environ.get(
+    "PYCLEF_MODEL_URL",
+    "https://github.com/viniciusfs14/PyClef/releases/download/model-v1.0.0/best.pt",
+)
+YOLO_MODEL = Path(os.environ["PYCLEF_MODEL_PATH"]) if os.environ.get("PYCLEF_MODEL_PATH") else (
+    PACKAGE_MODEL if PACKAGE_MODEL.exists() else MODEL_CACHE_DIR / "best.pt"
+)
 OUTPUT_BASE_NAME = "vinicin"
 POPPLER_PATH = r'C:\poppler\Library\bin' 
 

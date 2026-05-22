@@ -4,6 +4,8 @@ import numpy as np
 import os
 import re
 import tkinter as tk
+import urllib.error
+import urllib.request
 from pathlib import Path
 from tkinter import filedialog, simpledialog
 from ultralytics import YOLO
@@ -26,6 +28,8 @@ BASE_DIR = Path(__file__).resolve().parent
 PROGRESS_MESSAGES = {
     "pt": {
         "loading_model": "Carregando modelo de reconhecimento...",
+        "downloading_model": "Baixando modelo PyClef... {downloaded_mb}/{total_mb} MB",
+        "model_ready": "Modelo pronto.",
         "preparing_pages": "Preparando paginas da partitura...",
         "processing_page": "Processando pagina {page}...",
         "systems_found": "Sistemas encontrados: {systems} | pautas por sistema: {sizes} | braces detectados: {braces}",
@@ -41,6 +45,8 @@ PROGRESS_MESSAGES = {
     },
     "en": {
         "loading_model": "Loading recognition model...",
+        "downloading_model": "Downloading PyClef model... {downloaded_mb}/{total_mb} MB",
+        "model_ready": "Model ready.",
         "preparing_pages": "Preparing score pages...",
         "processing_page": "Processing page {page}...",
         "systems_found": "Systems found: {systems} | staves per system: {sizes} | braces detected: {braces}",
@@ -61,6 +67,58 @@ def safe_output_stem(path):
     stem = Path(path).stem if path else config.OUTPUT_BASE_NAME
     stem = re.sub(r"[^\w.-]+", "_", stem, flags=re.UNICODE).strip("._")
     return stem or config.OUTPUT_BASE_NAME
+
+
+def ensure_model_file(progress):
+    model_path = Path(config.YOLO_MODEL)
+    if model_path.exists() and model_path.stat().st_size > 0:
+        return model_path
+
+    if not config.MODEL_URL:
+        raise FileNotFoundError(
+            "YOLO model not found. Set PYCLEF_MODEL_PATH or PYCLEF_MODEL_URL."
+        )
+
+    model_path.parent.mkdir(parents=True, exist_ok=True)
+    temp_path = model_path.with_suffix(model_path.suffix + ".download")
+    if temp_path.exists():
+        temp_path.unlink()
+
+    downloaded = 0
+    try:
+        with urllib.request.urlopen(config.MODEL_URL, timeout=30) as response:
+            total = int(response.headers.get("Content-Length") or 0)
+            total_mb = f"{total / (1024 * 1024):.1f}" if total else "?"
+            progress("downloading_model", 4, downloaded_mb="0.0", total_mb=total_mb)
+            with temp_path.open("wb") as output:
+                while True:
+                    chunk = response.read(1024 * 1024)
+                    if not chunk:
+                        break
+                    output.write(chunk)
+                    downloaded += len(chunk)
+                    downloaded_mb = f"{downloaded / (1024 * 1024):.1f}"
+                    percent = 4
+                    if total:
+                        percent = 4 + int(min(1, downloaded / total) * 3)
+                    progress(
+                        "downloading_model",
+                        percent,
+                        downloaded_mb=downloaded_mb,
+                        total_mb=total_mb,
+                    )
+        temp_path.replace(model_path)
+    except (urllib.error.URLError, OSError) as exc:
+        if temp_path.exists():
+            temp_path.unlink()
+        raise RuntimeError(
+            "Could not download the PyClef model. Upload best.pt to the configured "
+            "release URL or set PYCLEF_MODEL_PATH to a local model file. "
+            f"URL: {config.MODEL_URL}"
+        ) from exc
+
+    progress("model_ready", 7)
+    return model_path
 
 # Configurações Visuais
 COLOR_BOX = (225, 105, 65)
@@ -336,12 +394,8 @@ def process_score_files(file_list, bpm, progress_callback=None, output_options=N
     output_dir.mkdir(parents=True, exist_ok=True)
 
     progress("loading_model", 3)
-    if not Path(config.YOLO_MODEL).exists():
-        raise FileNotFoundError(
-            "YOLO model not found. Place best.pt in pyclef_app/model/ "
-            "or set the PYCLEF_MODEL_PATH environment variable to the model file."
-        )
-    model = YOLO(config.YOLO_MODEL)
+    model_path = ensure_model_file(progress)
+    model = YOLO(model_path)
     pages_images = []
     progress("preparing_pages", 8)
     for f in file_list:

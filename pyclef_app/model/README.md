@@ -1,13 +1,16 @@
 # PyClef model
 
-The YOLO model file is not tracked in Git because GitHub blocks files larger than
-100 MB.
+The YOLO model file is not tracked in Git because GitHub and PyPI block large
+files by default.
 
-For local development, place `best.pt` in this folder:
+PyClef will download `best.pt` automatically from:
 
 ```text
-pyclef_app/model/best.pt
+https://github.com/viniciusfs14/PyClef/releases/download/model-v1.0.0/best.pt
 ```
 
-Alternatively, set the `PYCLEF_MODEL_PATH` environment variable to the full path
-of the model file before starting PyClef.
+Attach `best.pt` to that GitHub Release, or override the URL with
+`PYCLEF_MODEL_URL`.
+
+For local development, you can also set `PYCLEF_MODEL_PATH` to the full path of
+the model file before starting PyClef.
