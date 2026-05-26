@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <title>MIRP Methodology | PyClef</title>
+    <meta name="description" content="Overview of MIRP, the structural refinement methodology used by PyClef for optical music recognition.">
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="imgs/logo_black.png">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container nav-content">
+            <a href="index.html" class="nav-brand"><img src="imgs/logo_black.png" alt="PyClef" class="nav-logo"><span>PyClef</span></a>
+            <div class="nav-links">
+                <a href="index.html" data-i18n="nav-home">Home</a>
+                <a href="methodology.html" class="active" data-i18n="nav-method">Methodology</a>
+                <a href="docs.html" data-i18n="nav-docs">Docs</a>
+                <a href="comparison.html" data-i18n="nav-results">Results</a>
+            </div>
+            <div class="nav-actions">
+                <button id="lang-switch" class="btn-ghost"><img src="https://flagcdn.com/w20/br.png" alt="Brasil" class="flag-img"><img src="https://flagcdn.com/w20/us.png" alt="USA" class="flag-img"><span id="lang-text">EN</span></button>
+                <button id="theme-switch" class="btn-ghost icon-btn"><i id="theme-icon" class="fas fa-moon"></i></button>
+                <a href="https://github.com/viniciusfs14/PyClef" target="_blank" class="btn-github"><i class="fab fa-github"></i><span>GitHub</span></a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
+        <header class="page-hero">
+            <p class="eyebrow" data-i18n="method-kicker">Research methodology</p>
+            <h1 data-i18n="method-title">MIRP: structural refinement for musical reconstruction.</h1>
+            <p data-i18n="method-lead">MIRP is the refinement layer designed for PyClef. It transforms raw neural detections into musically meaningful events by modeling the staff, clefs, systems and score geometry.</p>
+        </header>
+
+        <section class="method-grid">
+            <article class="glass-card">
+                <i class="fas fa-ruler-combined icon-large"></i>
+                <h3 data-i18n="mirp-1-title">Staff modeling</h3>
+                <p data-i18n="mirp-1-text">Detected staves define the coordinate system used to infer musical height, system boundaries and page flow.</p>
+            </article>
+            <article class="glass-card">
+                <i class="fas fa-music icon-large"></i>
+                <h3 data-i18n="mirp-2-title">Clef-aware pitch</h3>
+                <p data-i18n="mirp-2-text">Vertical note positions are interpreted through the active clef, reducing the gap between visual detection and playable pitch.</p>
+            </article>
+            <article class="glass-card">
+                <i class="fas fa-link icon-large"></i>
+                <h3 data-i18n="mirp-3-title">System grouping</h3>
+                <p data-i18n="mirp-3-text">Braces and spatial proximity help identify musical systems, including piano-style paired staves.</p>
+            </article>
+        </section>
+
+        <section>
+            <div class="section-heading">
+                <p class="eyebrow" data-i18n="method-flow-kicker">MIRP flow</p>
+                <h2 data-i18n="method-flow-title">A deterministic layer after neural detection.</h2>
+            </div>
+            <div class="timeline">
+                <div class="timeline-card">
+                    <span>01</span>
+                    <div>
+                        <h3 data-i18n="flow-1-title">Normalize detections</h3>
+                        <p data-i18n="flow-1-text">Filter overlapping boxes and separate structural objects from musical symbols.</p>
+                    </div>
+                </div>
+                <div class="timeline-card">
+                    <span>02</span>
+                    <div>
+                        <h3 data-i18n="flow-2-title">Recover score structure</h3>
+                        <p data-i18n="flow-2-text">Organize staves, braces, clefs and symbol columns to recover the reading order of the score.</p>
+                    </div>
+                </div>
+                <div class="timeline-card">
+                    <span>03</span>
+                    <div>
+                        <h3 data-i18n="flow-3-title">Convert geometry into music</h3>
+                        <p data-i18n="flow-3-text">Use staff-relative coordinates to assign note names, octaves and event positions.</p>
+                    </div>
+                </div>
+                <div class="timeline-card">
+                    <span>04</span>
+                    <div>
+                        <h3 data-i18n="flow-4-title">Export auditable outputs</h3>
+                        <p data-i18n="flow-4-text">Create annotated images and playback files so users can inspect both the recognition and the generated sound.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="cta-section">
+            <div>
+                <p class="eyebrow" data-i18n="article-kicker">Article draft</p>
+                <h2 data-i18n="article-title">Automatic sheet music recognition with structural detection refinement.</h2>
+                <p data-i18n="article-text">The paper draft is included for citation and future expansion as the methodology is finalized.</p>
+            </div>
+            <a href="papers/pyclef-mirp-paper.pdf" target="_blank" class="btn-primary" data-i18n="paper-download">Open paper PDF</a>
+        </section>
+    </main>
+
+    <footer class="footer-main">
+        <div class="container footer-content">
+            <span>&copy; 2026 PyClef, by Vinícius Silvestre</span>
+            <span data-i18n="footer-text">Hybrid Optical Music Recognition research and tooling.</span>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

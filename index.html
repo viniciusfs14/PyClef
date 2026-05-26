@@ -3,151 +3,172 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-    <title>PyClef</title>
+    <title>PyClef | Optical Music Recognition</title>
+    <meta name="description" content="PyClef is a hybrid OMR pipeline that combines YOLO-based symbol detection with MIRP structural refinement for sheet music digitization.">
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
     <link rel="icon" type="image/png" href="imgs/logo_black.png">
 </head>
 <body>
     <nav class="navbar">
         <div class="container nav-content">
-            <div class="nav-left">
-                <button id="lang-switch" class="btn-ghost">
-                    <div class="flags-container">
-                        <img id="flag-br" src="https://flagcdn.com/w20/br.png" alt="Brasil" class="flag-img">
-                        <img id="flag-us" src="https://flagcdn.com/w20/us.png" alt="USA" class="flag-img">
-                    </div>
+            <a href="index.html" class="nav-brand">
+                <img src="imgs/logo_black.png" alt="PyClef" class="nav-logo">
+                <span>PyClef</span>
+            </a>
+
+            <div class="nav-links">
+                <a href="index.html" data-i18n="nav-home">Home</a>
+                <a href="methodology.html" data-i18n="nav-method">Methodology</a>
+                <a href="docs.html" data-i18n="nav-docs">Docs</a>
+                <a href="comparison.html" data-i18n="nav-results">Results</a>
+            </div>
+
+            <div class="nav-actions">
+                <button id="lang-switch" class="btn-ghost" aria-label="Change language">
+                    <img src="https://flagcdn.com/w20/br.png" alt="Brasil" class="flag-img">
+                    <img src="https://flagcdn.com/w20/us.png" alt="USA" class="flag-img">
                     <span id="lang-text">EN</span>
                 </button>
-                <button id="theme-switch" class="btn-ghost">
+                <button id="theme-switch" class="btn-ghost icon-btn" aria-label="Change theme">
                     <i id="theme-icon" class="fas fa-moon"></i>
                 </button>
+                <a href="https://github.com/viniciusfs14/PyClef" target="_blank" class="btn-github">
+                    <i class="fab fa-github"></i>
+                    <span>GitHub</span>
+                </a>
             </div>
-
-            <div class="nav-center">
-                <a href="#" class="nav-brand">PyClef</a>
-            </div>
-
-            <a href="https://github.com/viniciusfs14/PyClef" target="_blank" class="btn-github">
-                <i class="fab fa-github"></i> GitHub
-            </a>
         </div>
     </nav>
 
-    <main class="container">
-        <header class="hero-section">
-            <img id="main-logo" src="imgs/logo_black.png" alt="PyClef Logo" class="hero-logo">
-            <h1 data-i18n="hero-h1">The Future of <span>Sheet Music</span> Digitization.</h1>
-            <p data-i18n="hero-p">A high-performance OMR pipeline merging deep learning with DSP.</p>
-        </header>
-
-        <section class="intro-section">
-            <h2 data-i18n="intro-h2">Introdução</h2>
-            <p data-i18n="intro-p1">O PyClef é uma abordagem híbrida para Reconhecimento Óptico de Partituras Musicais (OMR), integrando detecção de objetos baseada em aprendizado profundo com modelagem estrutural explícita. O sistema utiliza a arquitetura YOLOv11s para identificar 208 classes de símbolos musicais no dataset DeepScoresV2 (Dense), caracterizado por elevada densidade simbólica e forte desbalanceamento entre classes.</p>
-            <p data-i18n="intro-p2">O modelo alcançou mAP=0.4123 no conjunto de validação. Para superar limitações de métricas puramente geométricas, foi incorporado um módulo heurístico determinístico que impõe coerência estrutural à reconstrução simbólica da partitura. A avaliação funcional demonstrou que a reconstrução correta de altura musical evoluiu de aproximadamente 8% para 94% após a modelagem explícita da pauta musical.</p>
-        </section>
-
-        <section class="install-badge">
-            <div class="code-container">
-                <span class="prompt">$</span>
-                <code id="install-command">pip install pyclef</code>
-                <button class="copy-btn" onclick="copyInstall()" title="Copy command">
-                    <i class="far fa-copy"></i>
-                </button>
+    <main>
+        <section class="hero-section container">
+            <div class="hero-copy">
+                <p class="eyebrow" data-i18n="hero-kicker">Optical Music Recognition + MIRP</p>
+                <h1 data-i18n="hero-title">Turn sheet music into structured sound.</h1>
+                <p class="hero-lead" data-i18n="hero-lead">PyClef combines neural symbol detection with a structural refinement methodology to convert scores into annotations, MIDI, MP3 and synchronized video.</p>
+                <div class="hero-actions">
+                    <a href="docs.html" class="btn-primary" data-i18n="hero-start">Read the docs</a>
+                    <a href="methodology.html" class="btn-secondary" data-i18n="hero-method">Explore MIRP</a>
+                </div>
+                <div class="install-line">
+                    <span>$</span>
+                    <code id="install-command">pip install pyclef</code>
+                    <button class="copy-btn" onclick="copyInstall()" aria-label="Copy install command">
+                        <i class="far fa-copy"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="hero-visual">
+                <img id="main-logo" src="imgs/logo_black.png" alt="PyClef Logo" class="hero-logo">
+                <div class="metric-strip">
+                    <div>
+                        <strong>208</strong>
+                        <span data-i18n="metric-classes">symbol classes</span>
+                    </div>
+                    <div>
+                        <strong>0.4126</strong>
+                        <span>mAP</span>
+                    </div>
+                    <div>
+                        <strong>97.5%</strong>
+                        <span data-i18n="metric-pitch">pitch accuracy</span>
+                    </div>
+                </div>
             </div>
         </section>
 
-        <section class="links-section">
-            <a href="tutorial.html" class="link-btn">Tutorial</a>
-            <a href="comparison.html" class="link-btn">YOLO Comparison</a>
+        <section class="container section-grid">
+            <article class="glass-card span-2">
+                <p class="eyebrow" data-i18n="intro-kicker">Why PyClef exists</p>
+                <h2 data-i18n="intro-title">A practical bridge between OMR research and usable musical output.</h2>
+                <p data-i18n="intro-text">Most object detectors can find musical symbols, but raw bounding boxes are not enough to reconstruct a score. PyClef adds explicit staff modeling, clef-aware pitch reconstruction, rhythm grouping and export routines so detections become playable and inspectable results.</p>
+            </article>
+            <article class="glass-card">
+                <i class="fas fa-brain icon-large"></i>
+                <h3 data-i18n="card-neural-title">Neural detection</h3>
+                <p data-i18n="card-neural-text">YOLOv11s is used to detect dense musical notation classes from DeepScoresV2-style inputs.</p>
+            </article>
+            <article class="glass-card">
+                <i class="fas fa-diagram-project icon-large"></i>
+                <h3 data-i18n="card-mirp-title">MIRP refinement</h3>
+                <p data-i18n="card-mirp-text">The MIRP layer constrains detections with staff geometry, clefs, braces and score structure.</p>
+            </article>
         </section>
 
-        <section class="features-section">
-            <div class="features-grid">
-                <div class="feature-card">
-                    <i class="fas fa-brain icon-large"></i>
-                    <h3 data-i18n="ai-h3">Neural Engine</h3>
-                    <p>YOLOv11s model fine-tuned for detecting 208 musical symbol classes in high-density scores. Achieved mAP=0.4123 on DeepScoresV2 validation set.</p>
-                    <div class="video-container">
-                        <iframe src="https://www.youtube.com/embed/uFrg0uD5Txw" title="PyClef Demo" frameborder="0" allowfullscreen></iframe>
-                    </div>
+        <section class="container">
+            <div class="section-heading">
+                <p class="eyebrow" data-i18n="pipeline-kicker">Pipeline</p>
+                <h2 data-i18n="pipeline-title">From image to music-ready artifacts.</h2>
+            </div>
+            <div class="process-grid">
+                <div class="process-card">
+                    <span>01</span>
+                    <h3 data-i18n="step-detect-title">Detect</h3>
+                    <p data-i18n="step-detect-text">Read PDF or image pages and locate staves, braces, clefs, notes, rests and accidentals.</p>
                 </div>
+                <div class="process-card">
+                    <span>02</span>
+                    <h3 data-i18n="step-refine-title">Refine</h3>
+                    <p data-i18n="step-refine-text">Apply MIRP rules to organize detections into musical context instead of isolated boxes.</p>
+                </div>
+                <div class="process-card">
+                    <span>03</span>
+                    <h3 data-i18n="step-reconstruct-title">Reconstruct</h3>
+                    <p data-i18n="step-reconstruct-text">Map vertical positions to pitch, align systems and prepare playback events.</p>
+                </div>
+                <div class="process-card">
+                    <span>04</span>
+                    <h3 data-i18n="step-export-title">Export</h3>
+                    <p data-i18n="step-export-text">Generate annotated score pages, MIDI, MP3 and a synchronized video preview.</p>
+                </div>
+            </div>
+        </section>
 
-                <div class="feature-card">
-                    <i class="fas fa-desktop icon-large"></i>
-                    <h3 data-i18n="gui-h3">Interface & UX</h3>
-                    <p data-i18n="gui-detail">An intuitive experience designed for musicians and developers.</p>
-                    <ul class="feature-list">
-                        <li><i class="fas fa-check-circle"></i> <span data-i18n="gui-f1">Minimalist Design</span></li>
-                        <li><i class="fas fa-check-circle"></i> <span data-i18n="gui-f2">Direct Workflow</span></li>
-                        <li><i class="fas fa-check-circle"></i> <span data-i18n="gui-f3">Real-time Feedback</span></li>
-                    </ul>
-                    <div class="showcase-gallery">
-                        <div class="showcase-card">
-                            <img src="imgs/interface.png" alt="Main Interface" class="zoomable-img" onclick="openModal(this)">
-                            <span data-i18n="gui-img-1">Main Dashboard</span>
-                        </div>
-                        <div class="showcase-card">
-                            <img src="imgs/interface.png" alt="Native Dark Mode" class="zoomable-img" onclick="openModal(this)">
-                            <span data-i18n="gui-img-2">Native Dark Mode</span>
-                        </div>
-                    </div>
-                </div>
+        <section class="container showcase-section">
+            <div class="showcase-copy">
+                <p class="eyebrow" data-i18n="app-kicker">Desktop workflow</p>
+                <h2 data-i18n="app-title">Designed for quick score experiments.</h2>
+                <p data-i18n="app-text">The desktop interface keeps the workflow direct: select the score, choose outputs, process, then inspect the generated files in a results folder.</p>
+                <ul class="feature-list">
+                    <li><i class="fas fa-check-circle"></i> <span data-i18n="app-f1">PDF and image input</span></li>
+                    <li><i class="fas fa-check-circle"></i> <span data-i18n="app-f2">Annotated score output</span></li>
+                    <li><i class="fas fa-check-circle"></i> <span data-i18n="app-f3">Audio, MIDI and synchronized video</span></li>
+                </ul>
+            </div>
+            <div class="showcase-card wide">
+                <img src="imgs/interface.png" alt="PyClef desktop interface" class="zoomable-img" onclick="openModal(this)">
+            </div>
+        </section>
 
-                <div class="feature-card">
-                    <i class="fas fa-wave-square icon-large"></i>
-                    <h3 data-i18n="dsp-h3">Signal Synthesis</h3>
-                    <p>Deterministic heuristic module for structural consistency in score reconstruction. Improves pitch accuracy from 8% to 94%.</p>
-                    <div class="code-snippet">
-                        <pre><code class="language-javascript">freq = 440 * Math.pow(2, (n - 49) / 12);</code></pre>
-                    </div>
-                </div>
-
-                <div class="feature-card">
-                    <i class="fas fa-tachometer-alt icon-large"></i>
-                    <h3 data-i18n="perf-h3">Performance</h3>
-                    <p>Hybrid approach combining deep learning with domain-specific structural knowledge for robust OMR in dense scenarios.</p>
-                    <div class="stats">
-                        <div class="stat">
-                            <span class="stat-number">94%</span>
-                            <span class="stat-label">Pitch Accuracy</span>
-                        </div>
-                        <div class="stat">
-                            <span class="stat-number">0.41</span>
-                            <span class="stat-label">mAP Score</span>
-                        </div>
-                    </div>
-                </div>
+        <section class="container cta-section">
+            <div>
+                <p class="eyebrow" data-i18n="paper-kicker">Research reference</p>
+                <h2 data-i18n="paper-title">Read the article and methodology notes.</h2>
+                <p data-i18n="paper-text">The site includes a research-oriented methodology page, a documentation page for users, and a downloadable PDF of the current paper draft.</p>
+            </div>
+            <div class="cta-actions">
+                <a href="papers/pyclef-mirp-paper.pdf" class="btn-primary" target="_blank" data-i18n="paper-download">Open paper PDF</a>
+                <a href="methodology.html" class="btn-secondary" data-i18n="paper-method">View methodology</a>
             </div>
         </section>
     </main>
 
-    <section class="citation-section">
-        <div class="container">
-            <h2>Citação</h2>
-            <p>Se você usar o PyClef em seu trabalho, cite o artigo:</p>
-            <blockquote>
-                Fernandes, V., & Martins, S. A. M. (2024). PyClef: Uma Abordagem Híbrida para Reconhecimento Óptico de Partituras Musicais. [Detalhes do artigo].
-            </blockquote>
-        </div>
-    </section>
-
     <div id="imageModal" class="modal" onclick="closeModal()">
         <span class="close-modal">&times;</span>
-        <img class="modal-content" id="modalImg">
+        <img class="modal-content" id="modalImg" alt="Expanded preview">
     </div>
 
     <footer class="footer-main">
         <div class="container footer-content">
-            <p>&copy; 2026 PyClef, by Vinícius Silvestre</p>
+            <span>&copy; 2026 PyClef, by Vinícius Silvestre</span>
+            <span data-i18n="footer-text">Hybrid Optical Music Recognition research and tooling.</span>
         </div>
     </footer>
 
     <script src="script.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
 </body>
 </html>
