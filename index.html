@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
     <title>PyClef | Optical Music Recognition</title>
-    <meta name="description" content="PyClef is a hybrid OMR pipeline that combines YOLO-based symbol detection with MIRP structural refinement for sheet music digitization.">
+    <meta name="description" content="PyClef is a Python toolkit for Optical Music Recognition with YOLO-based detection and MIRP staff-referenced pitch inference.">
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -47,12 +47,12 @@
     <main>
         <section class="hero-section container">
             <div class="hero-copy">
-                <p class="eyebrow" data-i18n="hero-kicker">Optical Music Recognition + MIRP</p>
-                <h1 data-i18n="hero-title">Turn sheet music into structured sound.</h1>
-                <p class="hero-lead" data-i18n="hero-lead">PyClef combines neural symbol detection with a structural refinement methodology to convert scores into annotations, MIDI, MP3 and synchronized video.</p>
+                <p class="eyebrow" data-i18n="hero-kicker">Optical Music Recognition</p>
+                <h1 data-i18n="hero-title">A Python toolkit for sheet music recognition.</h1>
+                <p class="hero-lead" data-i18n="hero-lead">PyClef detects musical symbols in score images and applies MIRP, a staff-referenced inference method, to reconstruct note pitch and export reviewable outputs.</p>
                 <div class="hero-actions">
-                    <a href="docs.html" class="btn-primary" data-i18n="hero-start">Read the docs</a>
-                    <a href="methodology.html" class="btn-secondary" data-i18n="hero-method">Explore MIRP</a>
+                    <a href="docs.html" class="btn-primary" data-i18n="hero-start">Get started</a>
+                    <a href="methodology.html" class="btn-secondary" data-i18n="hero-method">Read the methodology</a>
                 </div>
                 <div class="install-line">
                     <span>$</span>
@@ -75,7 +75,7 @@
                     </div>
                     <div>
                         <strong>97.5%</strong>
-                        <span data-i18n="metric-pitch">pitch accuracy</span>
+                        <span data-i18n="metric-pitch">TRA with MIRP</span>
                     </div>
                 </div>
             </div>
@@ -83,60 +83,60 @@
 
         <section class="container section-grid">
             <article class="glass-card span-2">
-                <p class="eyebrow" data-i18n="intro-kicker">Why PyClef exists</p>
-                <h2 data-i18n="intro-title">A practical bridge between OMR research and usable musical output.</h2>
-                <p data-i18n="intro-text">Most object detectors can find musical symbols, but raw bounding boxes are not enough to reconstruct a score. PyClef adds explicit staff modeling, clef-aware pitch reconstruction, rhythm grouping and export routines so detections become playable and inspectable results.</p>
+                <p class="eyebrow" data-i18n="intro-kicker">Overview</p>
+                <h2 data-i18n="intro-title">Object detection alone is not enough for OMR.</h2>
+                <p data-i18n="intro-text">PyClef treats detection as one stage of a larger reconstruction pipeline. The detector locates symbols; MIRP uses the detected clef and staff geometry to infer pitch from relative vertical displacement.</p>
             </article>
             <article class="glass-card">
                 <i class="fas fa-brain icon-large"></i>
-                <h3 data-i18n="card-neural-title">Neural detection</h3>
-                <p data-i18n="card-neural-text">YOLOv11s is used to detect dense musical notation classes from DeepScoresV2-style inputs.</p>
+                <h3 data-i18n="card-neural-title">Detection model</h3>
+                <p data-i18n="card-neural-text">The current model uses YOLOv11S trained on 208 DeepScoresV2 Dense classes, with 0.4126 mAP@[0.5:0.95] in the reported evaluation.</p>
             </article>
             <article class="glass-card">
                 <i class="fas fa-diagram-project icon-large"></i>
-                <h3 data-i18n="card-mirp-title">MIRP refinement</h3>
-                <p data-i18n="card-mirp-text">The MIRP layer constrains detections with staff geometry, clefs, braces and score structure.</p>
+                <h3 data-i18n="card-mirp-title">MIRP</h3>
+                <p data-i18n="card-mirp-text">The Staff-Referenced Musical Inference Method defines a reference note from the clef and staff, then infers the pitch of detected notes.</p>
             </article>
         </section>
 
         <section class="container">
             <div class="section-heading">
-                <p class="eyebrow" data-i18n="pipeline-kicker">Pipeline</p>
-                <h2 data-i18n="pipeline-title">From image to music-ready artifacts.</h2>
+                <p class="eyebrow" data-i18n="pipeline-kicker">Workflow</p>
+                <h2 data-i18n="pipeline-title">The processing pipeline is explicit and auditable.</h2>
             </div>
             <div class="process-grid">
                 <div class="process-card">
                     <span>01</span>
                     <h3 data-i18n="step-detect-title">Detect</h3>
-                    <p data-i18n="step-detect-text">Read PDF or image pages and locate staves, braces, clefs, notes, rests and accidentals.</p>
+                    <p data-i18n="step-detect-text">Load a PDF or image and detect staves, clefs, notes, rests and related notation symbols.</p>
                 </div>
                 <div class="process-card">
                     <span>02</span>
-                    <h3 data-i18n="step-refine-title">Refine</h3>
-                    <p data-i18n="step-refine-text">Apply MIRP rules to organize detections into musical context instead of isolated boxes.</p>
+                    <h3 data-i18n="step-refine-title">Infer</h3>
+                    <p data-i18n="step-refine-text">Use MIRP to convert staff-relative geometry into note names and octaves.</p>
                 </div>
                 <div class="process-card">
                     <span>03</span>
-                    <h3 data-i18n="step-reconstruct-title">Reconstruct</h3>
-                    <p data-i18n="step-reconstruct-text">Map vertical positions to pitch, align systems and prepare playback events.</p>
+                    <h3 data-i18n="step-reconstruct-title">Review</h3>
+                    <p data-i18n="step-reconstruct-text">Create annotated pages so the recognition result can be inspected visually.</p>
                 </div>
                 <div class="process-card">
                     <span>04</span>
                     <h3 data-i18n="step-export-title">Export</h3>
-                    <p data-i18n="step-export-text">Generate annotated score pages, MIDI, MP3 and a synchronized video preview.</p>
+                    <p data-i18n="step-export-text">Write MIDI, MP3 and synchronized video files when those outputs are selected.</p>
                 </div>
             </div>
         </section>
 
         <section class="container showcase-section">
             <div class="showcase-copy">
-                <p class="eyebrow" data-i18n="app-kicker">Desktop workflow</p>
-                <h2 data-i18n="app-title">Designed for quick score experiments.</h2>
-                <p data-i18n="app-text">The desktop interface keeps the workflow direct: select the score, choose outputs, process, then inspect the generated files in a results folder.</p>
+                <p class="eyebrow" data-i18n="app-kicker">Desktop application</p>
+                <h2 data-i18n="app-title">A focused interface for running PyClef locally.</h2>
+                <p data-i18n="app-text">Select a score, choose the desired outputs, set the BPM and run the pipeline. Results are written to a folder named after the input file.</p>
                 <ul class="feature-list">
-                    <li><i class="fas fa-check-circle"></i> <span data-i18n="app-f1">PDF and image input</span></li>
-                    <li><i class="fas fa-check-circle"></i> <span data-i18n="app-f2">Annotated score output</span></li>
-                    <li><i class="fas fa-check-circle"></i> <span data-i18n="app-f3">Audio, MIDI and synchronized video</span></li>
+                    <li><i class="fas fa-check-circle"></i> <span data-i18n="app-f1">PDF, PNG and JPG input</span></li>
+                    <li><i class="fas fa-check-circle"></i> <span data-i18n="app-f2">Annotated score pages</span></li>
+                    <li><i class="fas fa-check-circle"></i> <span data-i18n="app-f3">MIDI, MP3 and synchronized video</span></li>
                 </ul>
             </div>
             <div class="showcase-card wide">
@@ -146,13 +146,13 @@
 
         <section class="container cta-section">
             <div>
-                <p class="eyebrow" data-i18n="paper-kicker">Research reference</p>
-                <h2 data-i18n="paper-title">Read the article and methodology notes.</h2>
-                <p data-i18n="paper-text">The site includes a research-oriented methodology page, a documentation page for users, and a downloadable PDF of the current paper draft.</p>
+                <p class="eyebrow" data-i18n="paper-kicker">Paper</p>
+                <h2 data-i18n="paper-title">Methodology and evaluation.</h2>
+                <p data-i18n="paper-text">The article describes the PyClef pipeline, the MIRP method and the reported detection and pitch reconstruction results.</p>
             </div>
             <div class="cta-actions">
-                <a href="papers/pyclef-mirp-paper.pdf" class="btn-primary" target="_blank" data-i18n="paper-download">Open paper PDF</a>
-                <a href="methodology.html" class="btn-secondary" data-i18n="paper-method">View methodology</a>
+                <a href="papers/pyclef-mirp-paper.pdf" class="btn-primary" target="_blank" data-i18n="paper-download">Open paper</a>
+                <a href="methodology.html" class="btn-secondary" data-i18n="paper-method">Methodology</a>
             </div>
         </section>
     </main>
@@ -165,7 +165,7 @@
     <footer class="footer-main">
         <div class="container footer-content">
             <span>&copy; 2026 PyClef, by Vinícius Silvestre</span>
-            <span data-i18n="footer-text">Hybrid Optical Music Recognition research and tooling.</span>
+            <span data-i18n="footer-text">Python toolkit for Optical Music Recognition.</span>
         </div>
     </footer>
 

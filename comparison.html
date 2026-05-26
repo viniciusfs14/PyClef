@@ -33,25 +33,25 @@
     <main class="container">
         <header class="page-hero">
             <p class="eyebrow" data-i18n="results-kicker">Evaluation</p>
-            <h1 data-i18n="results-title">Detection metrics are only the first half of OMR.</h1>
-            <p data-i18n="results-lead">PyClef reports detector performance, but emphasizes functional reconstruction: whether the symbols become correct musical pitch and usable playback artifacts.</p>
+            <h1 data-i18n="results-title">Detection quality and reconstruction quality are reported separately.</h1>
+            <p data-i18n="results-lead">The paper reports object detection metrics and functional pitch reconstruction metrics, since high mAP does not necessarily imply correct musical reconstruction.</p>
         </header>
 
         <section class="section-grid">
             <article class="glass-card">
                 <i class="fas fa-crosshairs icon-large"></i>
                 <h3>mAP</h3>
-                <p data-i18n="result-map">The YOLOv11S detector reached 0.4126 mAP@[0.5:0.95] on DeepScoresV2 Dense.</p>
+                <p data-i18n="result-map">YOLOv11S reached 0.4126 mAP@[0.5:0.95] on DeepScoresV2 Dense.</p>
             </article>
             <article class="glass-card">
                 <i class="fas fa-music icon-large"></i>
                 <h3>TRA</h3>
-                <p data-i18n="result-tra">MIRP increased pitch reconstruction from 4% to 97.5% with YOLOv11S.</p>
+                <p data-i18n="result-tra">With YOLOv11S, MIRP increased TRA from 0.04 to 0.975.</p>
             </article>
             <article class="glass-card span-2">
                 <p class="eyebrow" data-i18n="results-balance-kicker">Model trade-off</p>
-                <h2 data-i18n="results-balance-title">The selected model balances detection quality and runtime cost.</h2>
-                <p data-i18n="results-balance-text">Larger YOLO variants can improve raw detection metrics, but PyClef prioritizes a practical pipeline where structural refinement has a major effect on the final musical result.</p>
+                <h2 data-i18n="results-balance-title">MIRP reduces the practical gap between model sizes.</h2>
+                <p data-i18n="results-balance-text">YOLOv11L reached 0.51379 mAP, but both YOLOv11S and YOLOv11L exceeded 97% TRA after MIRP.</p>
             </article>
         </section>
 
@@ -97,7 +97,7 @@
     <footer class="footer-main">
         <div class="container footer-content">
             <span>&copy; 2026 PyClef, by Vinícius Silvestre</span>
-            <span data-i18n="footer-text">Hybrid Optical Music Recognition research and tooling.</span>
+            <span data-i18n="footer-text">Python toolkit for Optical Music Recognition.</span>
         </div>
     </footer>
 

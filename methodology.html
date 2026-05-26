@@ -33,60 +33,60 @@
     <main class="container">
         <header class="page-hero">
             <p class="eyebrow" data-i18n="method-kicker">Research methodology</p>
-            <h1 data-i18n="method-title">MIRP: structural refinement for musical reconstruction.</h1>
-            <p data-i18n="method-lead">MIRP is the refinement layer designed for PyClef. It transforms raw neural detections into musically meaningful events by modeling the staff, clefs, systems and score geometry.</p>
+            <h1 data-i18n="method-title">MIRP: Staff-Referenced Musical Inference.</h1>
+            <p data-i18n="method-lead">MIRP uses the detected clef and staff boundaries to define a reference note. Other notes are inferred from their vertical displacement relative to that reference.</p>
         </header>
 
         <section class="method-grid">
             <article class="glass-card">
                 <i class="fas fa-ruler-combined icon-large"></i>
-                <h3 data-i18n="mirp-1-title">Staff modeling</h3>
-                <p data-i18n="mirp-1-text">Detected staves define the coordinate system used to infer musical height, system boundaries and page flow.</p>
+                <h3 data-i18n="mirp-1-title">Staff reference</h3>
+                <p data-i18n="mirp-1-text">The detected staff provides its upper and lower boundaries. The vertical step is estimated from these coordinates.</p>
             </article>
             <article class="glass-card">
                 <i class="fas fa-music icon-large"></i>
-                <h3 data-i18n="mirp-2-title">Clef-aware pitch</h3>
-                <p data-i18n="mirp-2-text">Vertical note positions are interpreted through the active clef, reducing the gap between visual detection and playable pitch.</p>
+                <h3 data-i18n="mirp-2-title">Clef reference</h3>
+                <p data-i18n="mirp-2-text">The clef determines the reference note used to interpret positions on the staff.</p>
             </article>
             <article class="glass-card">
                 <i class="fas fa-link icon-large"></i>
-                <h3 data-i18n="mirp-3-title">System grouping</h3>
-                <p data-i18n="mirp-3-text">Braces and spatial proximity help identify musical systems, including piano-style paired staves.</p>
+                <h3 data-i18n="mirp-3-title">Pitch reconstruction</h3>
+                <p data-i18n="mirp-3-text">In the reported YOLOv11S experiment, TRA improved from 0.04 to 0.975 after MIRP.</p>
             </article>
         </section>
 
         <section>
             <div class="section-heading">
                 <p class="eyebrow" data-i18n="method-flow-kicker">MIRP flow</p>
-                <h2 data-i18n="method-flow-title">A deterministic layer after neural detection.</h2>
+                <h2 data-i18n="method-flow-title">MIRP is applied after object detection.</h2>
             </div>
             <div class="timeline">
                 <div class="timeline-card">
                     <span>01</span>
                     <div>
-                        <h3 data-i18n="flow-1-title">Normalize detections</h3>
-                        <p data-i18n="flow-1-text">Filter overlapping boxes and separate structural objects from musical symbols.</p>
+                        <h3 data-i18n="flow-1-title">Collect detections</h3>
+                        <p data-i18n="flow-1-text">Separate structural detections, such as staves and clefs, from note detections.</p>
                     </div>
                 </div>
                 <div class="timeline-card">
                     <span>02</span>
                     <div>
-                        <h3 data-i18n="flow-2-title">Recover score structure</h3>
-                        <p data-i18n="flow-2-text">Organize staves, braces, clefs and symbol columns to recover the reading order of the score.</p>
+                        <h3 data-i18n="flow-2-title">Estimate staff step</h3>
+                        <p data-i18n="flow-2-text">Compute the distance between adjacent staff positions from the detected staff box.</p>
                     </div>
                 </div>
                 <div class="timeline-card">
                     <span>03</span>
                     <div>
-                        <h3 data-i18n="flow-3-title">Convert geometry into music</h3>
-                        <p data-i18n="flow-3-text">Use staff-relative coordinates to assign note names, octaves and event positions.</p>
+                        <h3 data-i18n="flow-3-title">Infer pitch</h3>
+                        <p data-i18n="flow-3-text">Measure the vertical displacement between the reference note and each detected note center.</p>
                     </div>
                 </div>
                 <div class="timeline-card">
                     <span>04</span>
                     <div>
                         <h3 data-i18n="flow-4-title">Export auditable outputs</h3>
-                        <p data-i18n="flow-4-text">Create annotated images and playback files so users can inspect both the recognition and the generated sound.</p>
+                        <p data-i18n="flow-4-text">Write annotated images and optional playback files for inspection and reuse.</p>
                     </div>
                 </div>
             </div>
@@ -95,17 +95,17 @@
         <section class="cta-section">
             <div>
                 <p class="eyebrow" data-i18n="article-kicker">Article draft</p>
-                <h2 data-i18n="article-title">Automatic sheet music recognition with structural detection refinement.</h2>
-                <p data-i18n="article-text">The paper draft is included for citation and future expansion as the methodology is finalized.</p>
+                <h2 data-i18n="article-title">PyClef: Optical Music Recognition with MIRP.</h2>
+                <p data-i18n="article-text">The paper reports YOLOv11S results on DeepScoresV2 Dense and shows that MIRP raises pitch reconstruction from about 4% to 97.5%.</p>
             </div>
-            <a href="papers/pyclef-mirp-paper.pdf" target="_blank" class="btn-primary" data-i18n="paper-download">Open paper PDF</a>
+            <a href="papers/pyclef-mirp-paper.pdf" target="_blank" class="btn-primary" data-i18n="paper-download">Open paper</a>
         </section>
     </main>
 
     <footer class="footer-main">
         <div class="container footer-content">
             <span>&copy; 2026 PyClef, by Vinícius Silvestre</span>
-            <span data-i18n="footer-text">Hybrid Optical Music Recognition research and tooling.</span>
+            <span data-i18n="footer-text">Python toolkit for Optical Music Recognition.</span>
         </div>
     </footer>
 
