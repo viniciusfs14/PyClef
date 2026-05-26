@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
     <title>Documentation | PyClef</title>
-    <meta name="description" content="PyClef installation, usage and output documentation.">
+    <meta name="description" content="PyClef installation, guided interface tour, usage and output documentation.">
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -62,6 +62,64 @@ Pyclef()</code></pre>
 
         <section>
             <div class="section-heading">
+                <p class="eyebrow" data-i18n="guide-kicker">Guided interface tour</p>
+                <h2 data-i18n="guide-title">Follow the desktop workflow visually.</h2>
+                <p data-i18n="guide-lead">These screenshots show the main parts of the PyClef interface, from the start screen to output review.</p>
+            </div>
+            <div class="guide-grid">
+                <article class="guide-card">
+                    <img src="imgs/guide-01-home.png" alt="PyClef home screen" class="zoomable-img" onclick="openModal(this)">
+                    <div>
+                        <span>01</span>
+                        <h3 data-i18n="guide-1-title">Start from Home</h3>
+                        <p data-i18n="guide-1-text">Use the Start button to move from the welcome screen into the score workspace.</p>
+                    </div>
+                </article>
+                <article class="guide-card">
+                    <img src="imgs/guide-02-scores-empty.png" alt="PyClef score workspace before file selection" class="zoomable-img" onclick="openModal(this)">
+                    <div>
+                        <span>02</span>
+                        <h3 data-i18n="guide-2-title">Open Scores</h3>
+                        <p data-i18n="guide-2-text">The Scores page centralizes file selection, BPM, output options, logs and result buttons.</p>
+                    </div>
+                </article>
+                <article class="guide-card">
+                    <img src="imgs/guide-03-scores-selected.png" alt="PyClef score selected and output options" class="zoomable-img" onclick="openModal(this)">
+                    <div>
+                        <span>03</span>
+                        <h3 data-i18n="guide-3-title">Choose outputs</h3>
+                        <p data-i18n="guide-3-text">After selecting a PDF or image, enable the outputs you need: annotations, MP3, MIDI or video.</p>
+                    </div>
+                </article>
+                <article class="guide-card">
+                    <img src="imgs/guide-04-processing.png" alt="PyClef processing progress and logs" class="zoomable-img" onclick="openModal(this)">
+                    <div>
+                        <span>04</span>
+                        <h3 data-i18n="guide-4-title">Track progress</h3>
+                        <p data-i18n="guide-4-text">The progress bar and log panel show what PyClef is doing during detection, reconstruction and export.</p>
+                    </div>
+                </article>
+                <article class="guide-card">
+                    <img src="imgs/guide-05-results.png" alt="PyClef completed processing and result buttons" class="zoomable-img" onclick="openModal(this)">
+                    <div>
+                        <span>05</span>
+                        <h3 data-i18n="guide-5-title">Open results</h3>
+                        <p data-i18n="guide-5-text">When processing finishes, use the result buttons to open the folder or generated files.</p>
+                    </div>
+                </article>
+                <article class="guide-card">
+                    <img src="imgs/guide-06-about.png" alt="PyClef about screen" class="zoomable-img" onclick="openModal(this)">
+                    <div>
+                        <span>06</span>
+                        <h3 data-i18n="guide-6-title">Learn about PyClef</h3>
+                        <p data-i18n="guide-6-text">The About page summarizes the recognition, playback and review goals of the project.</p>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <section>
+            <div class="section-heading">
                 <p class="eyebrow" data-i18n="usage-kicker">Recommended workflow</p>
                 <h2 data-i18n="usage-title">A short path from score to reviewable result.</h2>
             </div>
@@ -112,6 +170,11 @@ PyClef: Reconhecimento Óptico de Partituras com MIRP.</code></pre>
             <span data-i18n="footer-text">Hybrid Optical Music Recognition research and tooling.</span>
         </div>
     </footer>
+
+    <div id="imageModal" class="modal" onclick="closeModal()">
+        <span class="close-modal">&times;</span>
+        <img class="modal-content" id="modalImg" alt="Expanded interface screenshot">
+    </div>
 
     <script src="script.js"></script>
 </body>
