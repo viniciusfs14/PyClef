@@ -125,7 +125,7 @@ const content = {
         "nav-docs": "Docs",
         "nav-results": "Resultados",
         "hero-kicker": "Reconhecimento Óptico de Partituras",
-        "hero-title": "Uma biblioteca Python para reconhecimento de partituras.",
+        "hero-title": "Reconhecimento de partituras em Python.",
         "hero-lead": "O PyClef detecta símbolos musicais em imagens de partituras e aplica o MIRP, um método de inferência por referência de pauta, para reconstruir alturas e exportar resultados revisáveis.",
         "hero-start": "Começar",
         "hero-method": "Ler metodologia",
