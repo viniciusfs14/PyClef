@@ -39,6 +39,7 @@ It combines neural symbol detection with staff-aware post-processing to make sco
 - Annotated score image output
 - MIDI export
 - MP3 audio rendering
+- Optional SoundFont piano rendering through FluidSynth
 - Synchronized MP4 video preview
 - Desktop interface with English and Portuguese support
 - Automatic model download on first use
@@ -87,6 +88,23 @@ MP3 and video generation use audio/video processing libraries that may require F
 
 Make sure FFmpeg is installed and available in your system `PATH`.
 
+### FluidSynth
+
+PyClef includes an internal audio synthesizer by default. For a more realistic piano sound, the desktop app also provides a `SoundFont piano` option.
+
+That option requires FluidSynth. Install FluidSynth and make sure the executable is available in your system `PATH`, or set:
+
+```bash
+PYCLEF_FLUIDSYNTH_PATH=/path/to/fluidsynth
+```
+
+On Windows PowerShell:
+
+```powershell
+$env:PYCLEF_FLUIDSYNTH_PATH="C:\tools\fluidsynth\bin\fluidsynth.exe"
+pyclef
+```
+
 ## Model File
 
 The YOLO model is not bundled inside the PyPI package because the file is large.
@@ -121,6 +139,33 @@ On Windows PowerShell:
 
 ```powershell
 $env:PYCLEF_MODEL_PATH="C:\path\to\best.pt"
+pyclef
+```
+
+## SoundFont Audio
+
+The SoundFont file is not bundled inside the PyPI package. When `SoundFont piano` is selected, PyClef looks for the SoundFont in this order:
+
+1. `PYCLEF_SOUNDFONT_PATH`, if set.
+2. The user cache folder at `~/.pyclef/soundfonts/GeneralUser-GS.sf2`.
+3. Automatic download from `PYCLEF_SOUNDFONT_URL`.
+
+By default, `PYCLEF_SOUNDFONT_URL` points to the GeneralUser GS SoundFont:
+
+```text
+https://raw.githubusercontent.com/mrbumpy409/GeneralUser-GS/main/GeneralUser-GS.sf2
+```
+
+For manual setup, place a `.sf2` file anywhere and set:
+
+```bash
+PYCLEF_SOUNDFONT_PATH=/path/to/piano.sf2
+```
+
+On Windows PowerShell:
+
+```powershell
+$env:PYCLEF_SOUNDFONT_PATH="C:\path\to\piano.sf2"
 pyclef
 ```
 
@@ -160,6 +205,7 @@ result = process_score_files(
         "audio": True,
         "midi": True,
         "video": False,
+        "timbre": "soundfont_piano",
         "language": "en",
     },
 )

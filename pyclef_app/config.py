@@ -12,6 +12,19 @@ MODEL_URL = os.environ.get(
 YOLO_MODEL = Path(os.environ["PYCLEF_MODEL_PATH"]) if os.environ.get("PYCLEF_MODEL_PATH") else (
     PACKAGE_MODEL if PACKAGE_MODEL.exists() else MODEL_CACHE_DIR / "best.pt"
 )
+SOUNDFONT_CACHE_DIR = Path(
+    os.environ.get("PYCLEF_SOUNDFONT_DIR", Path.home() / ".pyclef" / "soundfonts")
+)
+SOUNDFONT_URL = os.environ.get(
+    "PYCLEF_SOUNDFONT_URL",
+    "https://raw.githubusercontent.com/mrbumpy409/GeneralUser-GS/main/GeneralUser-GS.sf2",
+)
+SOUNDFONT_PATH = (
+    Path(os.environ["PYCLEF_SOUNDFONT_PATH"])
+    if os.environ.get("PYCLEF_SOUNDFONT_PATH")
+    else SOUNDFONT_CACHE_DIR / "GeneralUser-GS.sf2"
+)
+FLUIDSYNTH_PATH = os.environ.get("PYCLEF_FLUIDSYNTH_PATH", "fluidsynth")
 OUTPUT_BASE_NAME = "vinicin"
 POPPLER_PATH = r'C:\poppler\Library\bin' 
 

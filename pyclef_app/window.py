@@ -6,6 +6,7 @@ from PySide6.QtGui import QColor, QDesktopServices, QFont, QIcon, QPainter, QPen
 from PySide6.QtWidgets import (
     QApplication,
     QCheckBox,
+    QComboBox,
     QDialog,
     QFileDialog,
     QFrame,
@@ -15,6 +16,7 @@ from PySide6.QtWidgets import (
     QMainWindow,
     QProgressBar,
     QPushButton,
+    QScrollArea,
     QSizePolicy,
     QSpinBox,
     QTextEdit,
@@ -70,7 +72,17 @@ TRANSLATIONS = {
         "audio": "MP3",
         "midi": "MIDI",
         "video": "Video",
+        "annotation_view": "Annotation view",
+        "annotation_clean": "Clean",
+        "annotation_detailed": "Detailed",
+        "sound_label": "Sound",
+        "sound_piano": "Piano",
+        "sound_soft_piano": "Soft piano",
+        "sound_bright_piano": "Bright piano",
+        "sound_soundfont_piano": "SoundFont piano",
         "video_warning": "Video output can take longer because PyClef needs to render and synchronize every frame.",
+        "preview_title": "Annotated preview",
+        "preview_empty": "Click the preview to open the annotated page.",
         "progress_waiting": "Waiting to process.",
         "progress_complete": "100% complete.",
         "log_placeholder": "Processing logs appear here.",
@@ -145,7 +157,17 @@ TRANSLATIONS = {
         "audio": "MP3",
         "midi": "MIDI",
         "video": "Video",
+        "annotation_view": "Visualizacao",
+        "annotation_clean": "Limpa",
+        "annotation_detailed": "Detalhada",
+        "sound_label": "Som",
+        "sound_piano": "Piano",
+        "sound_soft_piano": "Piano suave",
+        "sound_bright_piano": "Piano brilhante",
+        "sound_soundfont_piano": "Piano SoundFont",
         "video_warning": "A saida em video pode demorar mais, porque o PyClef precisa renderizar e sincronizar cada quadro.",
+        "preview_title": "Previa anotada",
+        "preview_empty": "Clique na previa para abrir a pagina anotada.",
         "progress_waiting": "Aguardando processamento.",
         "progress_complete": "100% concluido.",
         "log_placeholder": "Os registros do processamento aparecem aqui.",
@@ -289,6 +311,7 @@ class MainClef(QMainWindow, Ui_MainWindow):
         self.processing_thread = None
         self._sidebar_open = True
         self.language = "en"
+        self.current_theme = "dark"
         self.step_labels = []
         self.about_card_labels = []
         self._progress_pulse = 0
@@ -361,6 +384,12 @@ class MainClef(QMainWindow, Ui_MainWindow):
         self.language_button.setIconSize(QSize(60, 22))
         self.language_button.setText(self._language_button_text())
         self.language_button.setToolTip("Language")
+        self.theme_button = QPushButton()
+        self.theme_button.setObjectName("themeButton")
+        self.theme_button.setCursor(Qt.PointingHandCursor)
+        self.theme_button.setFixedSize(132, 48)
+        self.theme_button.setText(self._theme_button_text())
+        self.theme_button.setToolTip("Theme")
         self.verticalLayout.insertWidget(0, self.sidebar_brand_caption)
         self.verticalLayout.insertWidget(0, self.sidebar_brand)
 
@@ -372,6 +401,7 @@ class MainClef(QMainWindow, Ui_MainWindow):
         self.verticalLayout.addWidget(self.sheetsButton)
         self.verticalLayout.addWidget(self.aboutButton)
         self.verticalLayout.addWidget(self.language_button, 0, Qt.AlignHCenter)
+        self.verticalLayout.addWidget(self.theme_button, 0, Qt.AlignHCenter)
 
         self.selectsheetButton.setToolTip("Select scores")
         self.selectsheetButton.setCursor(Qt.PointingHandCursor)
@@ -639,8 +669,15 @@ class MainClef(QMainWindow, Ui_MainWindow):
         return card
 
     def _build_processing_panel(self):
-        self.processing_panel = QFrame(self.page)
+        self.processing_scroll = QScrollArea(self.page)
+        self.processing_scroll.setObjectName("processingScroll")
+        self.processing_scroll.setWidgetResizable(True)
+        self.processing_scroll.setFrameShape(QFrame.NoFrame)
+        self.processing_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+
+        self.processing_panel = QFrame()
         self.processing_panel.setObjectName("processingPanel")
+        self.processing_scroll.setWidget(self.processing_panel)
 
         layout = QVBoxLayout(self.processing_panel)
         layout.setContentsMargins(28, 24, 28, 24)
@@ -656,8 +693,9 @@ class MainClef(QMainWindow, Ui_MainWindow):
         self.files_label.setObjectName("filesLabel")
         self.files_label.setWordWrap(True)
 
-        options_row = QHBoxLayout()
-        options_row.setSpacing(12)
+        self.options_layout = QGridLayout()
+        self.options_layout.setHorizontalSpacing(12)
+        self.options_layout.setVerticalSpacing(10)
 
         self.bpm_label = QLabel()
         self.bpm_label.setObjectName("fieldLabel")
@@ -677,17 +715,13 @@ class MainClef(QMainWindow, Ui_MainWindow):
         self.process_button.setCursor(Qt.PointingHandCursor)
         self.process_button.setEnabled(False)
 
-        options_row.addWidget(self.bpm_label)
-        options_row.addWidget(self.bpm_input)
-        options_row.addStretch(1)
-        options_row.addWidget(self.choose_button)
-        options_row.addWidget(self.process_button)
-
         output_frame = QFrame()
         output_frame.setObjectName("outputFrame")
-        output_layout = QHBoxLayout(output_frame)
-        output_layout.setContentsMargins(16, 12, 16, 12)
-        output_layout.setSpacing(14)
+        output_frame.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.output_options_layout = QGridLayout(output_frame)
+        self.output_options_layout.setContentsMargins(16, 12, 16, 12)
+        self.output_options_layout.setHorizontalSpacing(14)
+        self.output_options_layout.setVerticalSpacing(10)
 
         self.output_label = QLabel()
         self.output_label.setObjectName("fieldLabel")
@@ -697,6 +731,16 @@ class MainClef(QMainWindow, Ui_MainWindow):
         self.output_audio = QCheckBox()
         self.output_midi = QCheckBox()
         self.output_video = QCheckBox()
+        self.annotation_mode_label = QLabel()
+        self.annotation_mode_label.setObjectName("fieldLabel")
+        self.annotation_mode_combo = QComboBox()
+        self.annotation_mode_combo.setObjectName("modeCombo")
+        self.annotation_mode_combo.setCursor(Qt.PointingHandCursor)
+        self.sound_label = QLabel()
+        self.sound_label.setObjectName("fieldLabel")
+        self.sound_combo = QComboBox()
+        self.sound_combo.setObjectName("modeCombo")
+        self.sound_combo.setCursor(Qt.PointingHandCursor)
         for checkbox in (
             self.output_all,
             self.output_annotations,
@@ -705,14 +749,6 @@ class MainClef(QMainWindow, Ui_MainWindow):
             self.output_video,
         ):
             checkbox.setCursor(Qt.PointingHandCursor)
-
-        output_layout.addWidget(self.output_label)
-        output_layout.addWidget(self.output_all)
-        output_layout.addWidget(self.output_annotations)
-        output_layout.addWidget(self.output_audio)
-        output_layout.addWidget(self.output_midi)
-        output_layout.addWidget(self.output_video)
-        output_layout.addStretch(1)
 
         self.video_warning_label = QLabel()
         self.video_warning_label.setObjectName("warningPill")
@@ -730,11 +766,41 @@ class MainClef(QMainWindow, Ui_MainWindow):
 
         self.log_output = QTextEdit()
         self.log_output.setReadOnly(True)
-        self.log_output.setMinimumHeight(180)
+        self.log_output.setMinimumHeight(150)
         self.log_output.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
-        results_row = QHBoxLayout()
-        results_row.setSpacing(10)
+        self.annotation_preview_frame = QFrame()
+        self.annotation_preview_frame.setObjectName("previewFrame")
+        self.annotation_preview_frame.setVisible(False)
+        self.annotation_preview_frame.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        self.preview_layout = QHBoxLayout(self.annotation_preview_frame)
+        self.preview_layout.setContentsMargins(14, 12, 14, 12)
+        self.preview_layout.setSpacing(14)
+
+        self.annotation_preview_image = QLabel()
+        self.annotation_preview_image.setObjectName("annotationPreview")
+        self.annotation_preview_image.setAlignment(Qt.AlignCenter)
+        self.annotation_preview_image.setMinimumSize(220, 120)
+        self.annotation_preview_image.setMaximumHeight(180)
+        self.annotation_preview_image.setCursor(Qt.PointingHandCursor)
+
+        preview_text_layout = QVBoxLayout()
+        preview_text_layout.setSpacing(6)
+        self.annotation_preview_title = QLabel()
+        self.annotation_preview_title.setObjectName("previewTitle")
+        self.annotation_preview_hint = QLabel()
+        self.annotation_preview_hint.setObjectName("previewHint")
+        self.annotation_preview_hint.setWordWrap(True)
+        preview_text_layout.addWidget(self.annotation_preview_title)
+        preview_text_layout.addWidget(self.annotation_preview_hint)
+        preview_text_layout.addStretch(1)
+
+        self.preview_layout.addWidget(self.annotation_preview_image, 0)
+        self.preview_layout.addLayout(preview_text_layout, 1)
+
+        self.results_layout = QGridLayout()
+        self.results_layout.setHorizontalSpacing(10)
+        self.results_layout.setVerticalSpacing(10)
 
         self.open_folder_button = QPushButton()
         self.open_folder_button.setObjectName("secondaryButton")
@@ -761,12 +827,16 @@ class MainClef(QMainWindow, Ui_MainWindow):
         self.open_annotations_button.setCursor(Qt.PointingHandCursor)
         self.open_annotations_button.setEnabled(False)
 
-        results_row.addWidget(self.open_folder_button)
-        results_row.addWidget(self.open_annotations_button)
-        results_row.addWidget(self.open_video_button)
-        results_row.addWidget(self.open_audio_button)
-        results_row.addWidget(self.open_midi_button)
-        results_row.addStretch(1)
+        for button in (
+            self.choose_button,
+            self.process_button,
+            self.open_folder_button,
+            self.open_annotations_button,
+            self.open_video_button,
+            self.open_audio_button,
+            self.open_midi_button,
+        ):
+            button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
         self.process_hint = QLabel()
         self.process_hint.setObjectName("panelSubtitle")
@@ -776,19 +846,166 @@ class MainClef(QMainWindow, Ui_MainWindow):
         layout.addWidget(self.process_title)
         layout.addWidget(self.process_hint)
         layout.addWidget(self.files_label)
-        layout.addLayout(options_row)
+        layout.addLayout(self.options_layout)
         layout.addWidget(output_frame)
         layout.addWidget(self.video_warning_label)
         layout.addWidget(self.progress_bar)
         layout.addWidget(self.progress_status_label)
         layout.addWidget(self.log_output)
-        layout.addLayout(results_row)
+        layout.addWidget(self.annotation_preview_frame)
+        layout.addLayout(self.results_layout)
 
-        self.gridLayout_10.addWidget(self.processing_panel, 1, 0, 1, 1)
+        self.gridLayout_10.addWidget(self.processing_scroll, 1, 0, 1, 1)
+        self._update_responsive_layout()
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        QTimer.singleShot(0, self._update_responsive_layout)
+
+    def _clear_grid_layout(self, layout, columns=8):
+        while layout.count():
+            layout.takeAt(0)
+        for column in range(columns):
+            layout.setColumnStretch(column, 0)
+
+    def _responsive_mode(self):
+        if not hasattr(self, "processing_scroll"):
+            return "wide"
+        width = self.processing_scroll.viewport().width()
+        if width < 160:
+            width = max(
+                self.page.width(),
+                self.stackedWidget.width() - 40,
+                self.width() - self.Sidebar.width() - 80,
+            )
+        if width < 700:
+            return "narrow"
+        if width < 1080:
+            return "medium"
+        return "wide"
+
+    def _add_grid_widgets(self, layout, widgets, columns):
+        for index, widget in enumerate(widgets):
+            row = index // columns
+            column = index % columns
+            layout.addWidget(widget, row, column)
+        for column in range(columns):
+            layout.setColumnStretch(column, 1)
+
+    def _update_responsive_layout(self):
+        if not hasattr(self, "options_layout"):
+            return
+
+        mode = self._responsive_mode()
+        if getattr(self, "_processing_layout_mode", None) == mode:
+            return
+        self._processing_layout_mode = mode
+
+        self._clear_grid_layout(self.options_layout, 6)
+        self._clear_grid_layout(self.output_options_layout, 8)
+        self._clear_grid_layout(self.results_layout, 6)
+
+        if mode == "wide":
+            self.options_layout.addWidget(self.bpm_label, 0, 0)
+            self.options_layout.addWidget(self.bpm_input, 0, 1)
+            self.options_layout.setColumnStretch(2, 1)
+            self.options_layout.addWidget(self.choose_button, 0, 3)
+            self.options_layout.addWidget(self.process_button, 0, 4)
+
+            for column, widget in enumerate((
+                self.output_label,
+                self.output_all,
+                self.output_annotations,
+                self.output_audio,
+                self.output_midi,
+                self.output_video,
+            )):
+                self.output_options_layout.addWidget(widget, 0, column)
+            self.output_options_layout.addWidget(self.annotation_mode_label, 1, 0)
+            self.output_options_layout.addWidget(self.annotation_mode_combo, 1, 1, 1, 2)
+            self.output_options_layout.addWidget(self.sound_label, 1, 3)
+            self.output_options_layout.addWidget(self.sound_combo, 1, 4, 1, 2)
+            self.output_options_layout.setColumnStretch(6, 1)
+
+            self._add_grid_widgets(
+                self.results_layout,
+                (
+                    self.open_folder_button,
+                    self.open_annotations_button,
+                    self.open_video_button,
+                    self.open_audio_button,
+                    self.open_midi_button,
+                ),
+                5,
+            )
+            return
+
+        self.options_layout.addWidget(self.bpm_label, 0, 0)
+        self.options_layout.addWidget(self.bpm_input, 0, 1)
+        self.options_layout.setColumnStretch(2, 1)
+
+        if mode == "medium":
+            self.options_layout.addWidget(self.choose_button, 1, 0, 1, 2)
+            self.options_layout.addWidget(self.process_button, 1, 2, 1, 2)
+
+            self.output_options_layout.addWidget(self.output_label, 0, 0)
+            self.output_options_layout.addWidget(self.output_all, 0, 1)
+            self.output_options_layout.addWidget(self.output_annotations, 0, 2)
+            self.output_options_layout.addWidget(self.output_audio, 1, 0)
+            self.output_options_layout.addWidget(self.output_midi, 1, 1)
+            self.output_options_layout.addWidget(self.output_video, 1, 2)
+            self.output_options_layout.addWidget(self.annotation_mode_label, 2, 0)
+            self.output_options_layout.addWidget(self.annotation_mode_combo, 2, 1, 1, 2)
+            self.output_options_layout.addWidget(self.sound_label, 3, 0)
+            self.output_options_layout.addWidget(self.sound_combo, 3, 1, 1, 2)
+            for column in range(3):
+                self.output_options_layout.setColumnStretch(column, 1)
+
+            self._add_grid_widgets(
+                self.results_layout,
+                (
+                    self.open_folder_button,
+                    self.open_annotations_button,
+                    self.open_video_button,
+                    self.open_audio_button,
+                    self.open_midi_button,
+                ),
+                3,
+            )
+            return
+
+        self.options_layout.addWidget(self.choose_button, 1, 0, 1, 3)
+        self.options_layout.addWidget(self.process_button, 2, 0, 1, 3)
+
+        self.output_options_layout.addWidget(self.output_label, 0, 0, 1, 2)
+        self.output_options_layout.addWidget(self.output_all, 1, 0)
+        self.output_options_layout.addWidget(self.output_annotations, 1, 1)
+        self.output_options_layout.addWidget(self.output_audio, 2, 0)
+        self.output_options_layout.addWidget(self.output_midi, 2, 1)
+        self.output_options_layout.addWidget(self.output_video, 3, 0)
+        self.output_options_layout.addWidget(self.annotation_mode_label, 4, 0)
+        self.output_options_layout.addWidget(self.annotation_mode_combo, 4, 1)
+        self.output_options_layout.addWidget(self.sound_label, 5, 0)
+        self.output_options_layout.addWidget(self.sound_combo, 5, 1)
+        self.output_options_layout.setColumnStretch(0, 1)
+        self.output_options_layout.setColumnStretch(1, 1)
+
+        self._add_grid_widgets(
+            self.results_layout,
+            (
+                self.open_folder_button,
+                self.open_annotations_button,
+                self.open_video_button,
+                self.open_audio_button,
+                self.open_midi_button,
+            ),
+            1,
+        )
 
     def _connect_actions(self):
         self.menuButton.setEnabled(False)
         self.language_button.clicked.connect(self.toggle_language)
+        self.theme_button.clicked.connect(self.toggle_theme)
         self.homeButton.clicked.connect(lambda: self._set_active_page(self.Home, self.homeButton))
         self.aboutButton.clicked.connect(lambda: self._set_active_page(self.about, self.aboutButton))
         self.sheetsButton.clicked.connect(lambda: self._set_active_page(self.page, self.sheetsButton))
@@ -799,6 +1016,7 @@ class MainClef(QMainWindow, Ui_MainWindow):
         self.process_button.clicked.connect(self.start_processing)
         self.output_all.toggled.connect(self._sync_output_controls)
         self.output_all.toggled.connect(lambda checked: self._update_video_warning())
+        self.output_all.toggled.connect(lambda checked: self._update_annotation_mode_enabled())
         for checkbox in (
             self.output_annotations,
             self.output_audio,
@@ -806,6 +1024,7 @@ class MainClef(QMainWindow, Ui_MainWindow):
             self.output_video,
         ):
             checkbox.toggled.connect(self._ensure_output_selection)
+        self.output_annotations.toggled.connect(lambda checked: self._update_annotation_mode_enabled())
         self.output_video.toggled.connect(lambda checked: self._update_video_warning())
 
         self.home_results_button.clicked.connect(self.open_results_folder)
@@ -814,9 +1033,11 @@ class MainClef(QMainWindow, Ui_MainWindow):
         self.open_video_button.clicked.connect(lambda: self.open_result("video"))
         self.open_audio_button.clicked.connect(lambda: self.open_result("audio"))
         self.open_midi_button.clicked.connect(lambda: self.open_result("midi"))
+        self.annotation_preview_image.mousePressEvent = lambda event: self.open_result("annotations")
         self.website.mousePressEvent = lambda event: self.open_website()
         self._sync_output_controls(False)
         self._update_video_warning()
+        self._update_annotation_mode_enabled()
 
     def open_scores_page(self):
         self._set_active_page(self.page, self.sheetsButton)
@@ -842,6 +1063,7 @@ class MainClef(QMainWindow, Ui_MainWindow):
         ):
             self.output_annotations.setChecked(True)
         self._update_video_warning()
+        self._update_annotation_mode_enabled()
 
     def _ensure_output_selection(self):
         if self.output_all.isChecked():
@@ -857,9 +1079,13 @@ class MainClef(QMainWindow, Ui_MainWindow):
         ):
             self.output_annotations.setChecked(True)
         self._update_video_warning()
+        self._update_annotation_mode_enabled()
 
     def _video_output_selected(self):
         return self.output_all.isChecked() or self.output_video.isChecked()
+
+    def _annotation_output_selected(self):
+        return self.output_all.isChecked() or self.output_annotations.isChecked()
 
     def _update_video_warning(self):
         if not hasattr(self, "video_warning_label"):
@@ -867,19 +1093,70 @@ class MainClef(QMainWindow, Ui_MainWindow):
         self.video_warning_label.setText(self.tr("video_warning"))
         self.video_warning_label.setVisible(self._video_output_selected())
 
+    def _current_annotation_mode(self):
+        if not hasattr(self, "annotation_mode_combo"):
+            return "clean"
+        mode = self.annotation_mode_combo.currentData()
+        return mode if mode in ("clean", "detailed") else "clean"
+
+    def _refresh_annotation_mode_options(self):
+        if not hasattr(self, "annotation_mode_combo"):
+            return
+        current_mode = self._current_annotation_mode()
+        self.annotation_mode_combo.blockSignals(True)
+        self.annotation_mode_combo.clear()
+        self.annotation_mode_combo.addItem(self.tr("annotation_clean"), "clean")
+        self.annotation_mode_combo.addItem(self.tr("annotation_detailed"), "detailed")
+        index = self.annotation_mode_combo.findData(current_mode)
+        self.annotation_mode_combo.setCurrentIndex(max(0, index))
+        self.annotation_mode_combo.blockSignals(False)
+
+    def _current_timbre(self):
+        if not hasattr(self, "sound_combo"):
+            return "piano"
+        timbre = self.sound_combo.currentData()
+        return timbre if timbre in ("piano", "soft_piano", "bright_piano", "soundfont_piano") else "piano"
+
+    def _refresh_timbre_options(self):
+        if not hasattr(self, "sound_combo"):
+            return
+        current_timbre = self._current_timbre()
+        self.sound_combo.blockSignals(True)
+        self.sound_combo.clear()
+        self.sound_combo.addItem(self.tr("sound_piano"), "piano")
+        self.sound_combo.addItem(self.tr("sound_soundfont_piano"), "soundfont_piano")
+        self.sound_combo.addItem(self.tr("sound_soft_piano"), "soft_piano")
+        self.sound_combo.addItem(self.tr("sound_bright_piano"), "bright_piano")
+        index = self.sound_combo.findData(current_timbre)
+        self.sound_combo.setCurrentIndex(max(0, index))
+        self.sound_combo.blockSignals(False)
+
+    def _update_annotation_mode_enabled(self):
+        if not hasattr(self, "annotation_mode_combo"):
+            return
+        enabled = self._annotation_output_selected()
+        self.annotation_mode_label.setEnabled(enabled)
+        self.annotation_mode_combo.setEnabled(enabled)
+
     def _selected_output_options(self):
+        annotation_mode = self._current_annotation_mode()
+        timbre = self._current_timbre()
         if self.output_all.isChecked():
             return {
                 "annotations": True,
                 "audio": True,
                 "midi": True,
                 "video": True,
+                "annotation_mode": annotation_mode,
+                "timbre": timbre,
             }
         return {
             "annotations": self.output_annotations.isChecked(),
             "audio": self.output_audio.isChecked(),
             "midi": self.output_midi.isChecked(),
             "video": self.output_video.isChecked(),
+            "annotation_mode": annotation_mode,
+            "timbre": timbre,
         }
 
     def _set_progress_animation(self, active):
@@ -919,6 +1196,16 @@ class MainClef(QMainWindow, Ui_MainWindow):
     def _language_button_text(self):
         return "EN" if self.language == "en" else "PT"
 
+    def _theme_button_text(self):
+        if self.language == "pt":
+            return "Claro" if self.current_theme == "dark" else "Escuro"
+        return "Light" if self.current_theme == "dark" else "Dark"
+
+    def _theme_button_tooltip(self):
+        if self.language == "pt":
+            return "Alternar tema claro/escuro"
+        return "Toggle light/dark theme"
+
     def _language_button_icon(self):
         icon_pixmap = QPixmap(60, 22)
         icon_pixmap.fill(Qt.transparent)
@@ -938,11 +1225,49 @@ class MainClef(QMainWindow, Ui_MainWindow):
         self.language = "pt" if self.language == "en" else "en"
         self.apply_language()
 
+    def toggle_theme(self):
+        self.current_theme = "light" if self.current_theme == "dark" else "dark"
+        self._apply_style()
+        self.theme_button.setText(self._theme_button_text())
+        self.theme_button.setToolTip(self._theme_button_tooltip())
+        self._set_active_page(self.stackedWidget.currentWidget(), self._active_nav_button())
+
+    def _active_nav_button(self):
+        for nav_button in (self.homeButton, self.sheetsButton, self.aboutButton):
+            if nav_button.property("active") == True:
+                return nav_button
+        return self.homeButton
+
+    def _apply_theme_assets(self):
+        logo_name = "logo_black.png" if self.current_theme == "dark" else "logo.png"
+        logo_path = str(BASE_DIR / "ui" / logo_name)
+        sidebar_logo = QPixmap(logo_path)
+        if not sidebar_logo.isNull():
+            self.sidebar_brand.setPixmap(
+                sidebar_logo.scaled(
+                    QSize(180, 132),
+                    Qt.KeepAspectRatio,
+                    Qt.SmoothTransformation,
+                )
+            )
+            if hasattr(self, "home_logo"):
+                self.home_logo.setPixmap(
+                    sidebar_logo.scaled(
+                        QSize(440, 300),
+                        Qt.KeepAspectRatio,
+                        Qt.SmoothTransformation,
+                    )
+                )
+            self.label.setPixmap(sidebar_logo)
+            self.label_3.setPixmap(sidebar_logo)
+
     def apply_language(self):
         self.sidebar_brand_caption.setText(self.tr("sidebar_caption"))
         self.language_button.setText(self._language_button_text())
         self.language_button.setIcon(self._language_button_icon())
         self.language_button.setToolTip("Idioma" if self.language == "pt" else "Language")
+        self.theme_button.setText(self._theme_button_text())
+        self.theme_button.setToolTip(self._theme_button_tooltip())
         self.homeButton.setText(self.tr("home_nav"))
         self.sheetsButton.setText(self.tr("scores_nav"))
         self.aboutButton.setText(self.tr("about_nav"))
@@ -975,7 +1300,13 @@ class MainClef(QMainWindow, Ui_MainWindow):
         self.output_audio.setText(self.tr("audio"))
         self.output_midi.setText(self.tr("midi"))
         self.output_video.setText(self.tr("video"))
+        self.annotation_mode_label.setText(self.tr("annotation_view"))
+        self._refresh_annotation_mode_options()
+        self.sound_label.setText(self.tr("sound_label"))
+        self._refresh_timbre_options()
         self.video_warning_label.setText(self.tr("video_warning"))
+        self.annotation_preview_title.setText(self.tr("preview_title"))
+        self.annotation_preview_hint.setText(self.tr("preview_empty"))
         if not self.progress_status_label.isVisible():
             self.progress_status_label.setText(self.tr("progress_waiting"))
         self.log_output.setPlaceholderText(self.tr("log_placeholder"))
@@ -996,6 +1327,7 @@ class MainClef(QMainWindow, Ui_MainWindow):
             title_label.setText(self.tr(title_key))
             body_label.setText(self.tr(body_key))
         self._update_video_warning()
+        self._update_annotation_mode_enabled()
         self._update_selected_files()
 
     def _set_active_page(self, page, button):
@@ -1009,6 +1341,9 @@ class MainClef(QMainWindow, Ui_MainWindow):
                 nav_button.setGraphicsEffect(None)
             nav_button.style().unpolish(nav_button)
             nav_button.style().polish(nav_button)
+        if page is self.page:
+            self._processing_layout_mode = None
+            QTimer.singleShot(0, self._update_responsive_layout)
 
     def open_website(self):
         QDesktopServices.openUrl(QUrl(WEBSITE_URL))
@@ -1052,6 +1387,8 @@ class MainClef(QMainWindow, Ui_MainWindow):
             return
 
         self.log_output.clear()
+        self.annotation_preview_frame.setVisible(False)
+        self.annotation_preview_image.clear()
         self.progress_bar.setVisible(True)
         self.progress_bar.setRange(0, 100)
         self.progress_bar.setValue(0)
@@ -1104,6 +1441,7 @@ class MainClef(QMainWindow, Ui_MainWindow):
                         str((BASE_DIR / value).resolve()) if not Path(value).is_absolute() else value
                     )
             self._set_result_buttons_enabled(True)
+            self._update_annotation_preview()
             self.home_status_label.setText(self.tr("status_done"))
             self.log(self.tr("status_done"))
             self.show_message(self.tr("done_title"), self.tr("done_msg"))
@@ -1118,6 +1456,33 @@ class MainClef(QMainWindow, Ui_MainWindow):
                 self.tr("error_msg"),
             )
 
+    def _update_annotation_preview(self):
+        annotations = self.result_files.get("annotations")
+        if isinstance(annotations, list):
+            preview_path = annotations[0] if annotations else None
+        else:
+            preview_path = annotations
+
+        if not preview_path or not Path(preview_path).exists():
+            self.annotation_preview_frame.setVisible(False)
+            self.annotation_preview_image.clear()
+            return
+
+        pixmap = QPixmap(str(preview_path))
+        if pixmap.isNull():
+            self.annotation_preview_frame.setVisible(False)
+            self.annotation_preview_image.clear()
+            return
+
+        self.annotation_preview_image.setPixmap(
+            pixmap.scaled(
+                QSize(360, 170),
+                Qt.KeepAspectRatio,
+                Qt.SmoothTransformation,
+            )
+        )
+        self.annotation_preview_frame.setVisible(True)
+
     def _set_controls_enabled(self, enabled):
         self.home_select_button.setEnabled(enabled)
         self.selectsheetButton.setEnabled(enabled)
@@ -1125,8 +1490,11 @@ class MainClef(QMainWindow, Ui_MainWindow):
         self.process_button.setEnabled(enabled and bool(self.selected_files))
         self.bpm_input.setEnabled(enabled)
         self.output_all.setEnabled(enabled)
+        self.sound_label.setEnabled(enabled)
+        self.sound_combo.setEnabled(enabled)
         if enabled:
             self._sync_output_controls(self.output_all.isChecked())
+            self._update_annotation_mode_enabled()
         else:
             for checkbox in (
                 self.output_annotations,
@@ -1135,6 +1503,10 @@ class MainClef(QMainWindow, Ui_MainWindow):
                 self.output_video,
             ):
                 checkbox.setEnabled(False)
+            self.annotation_mode_label.setEnabled(False)
+            self.annotation_mode_combo.setEnabled(False)
+            self.sound_label.setEnabled(False)
+            self.sound_combo.setEnabled(False)
 
     def _set_result_buttons_enabled(self, enabled):
         self.open_folder_button.setEnabled(enabled)
@@ -1200,8 +1572,7 @@ class MainClef(QMainWindow, Ui_MainWindow):
         return
 
     def _apply_style(self):
-        self.setStyleSheet(
-            """
+        dark_style = """
             QMainWindow, QWidget#centralwidget, QWidget#widget {
                 background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
                     stop:0 #080a12,
@@ -1218,6 +1589,37 @@ class MainClef(QMainWindow, Ui_MainWindow):
                 border-radius: 26px;
             }
             QWidget#verticaloptions {
+                background: transparent;
+            }
+            QScrollArea#processingScroll {
+                background: transparent;
+                border: 0;
+            }
+            QScrollArea#processingScroll > QWidget,
+            QScrollArea#processingScroll > QWidget > QWidget {
+                background: transparent;
+            }
+            QScrollBar:vertical {
+                background: transparent;
+                width: 10px;
+                margin: 4px 0 4px 0;
+            }
+            QScrollBar::handle:vertical {
+                background: rgba(64, 214, 255, 0.42);
+                border-radius: 5px;
+                min-height: 44px;
+            }
+            QScrollBar::handle:vertical:hover {
+                background: rgba(64, 214, 255, 0.62);
+            }
+            QScrollBar::add-line:vertical,
+            QScrollBar::sub-line:vertical {
+                height: 0;
+                border: 0;
+                background: transparent;
+            }
+            QScrollBar::add-page:vertical,
+            QScrollBar::sub-page:vertical {
                 background: transparent;
             }
             QStackedWidget,
@@ -1310,7 +1712,8 @@ class MainClef(QMainWindow, Ui_MainWindow):
                 background: #1fbde8;
                 border: 1px solid rgba(115, 226, 255, 0.60);
             }
-            QPushButton#languageButton {
+            QPushButton#languageButton,
+            QPushButton#themeButton {
                 background: rgba(255, 255, 255, 0.105);
                 border: 1px solid rgba(255, 255, 255, 0.20);
                 border-radius: 18px;
@@ -1321,11 +1724,13 @@ class MainClef(QMainWindow, Ui_MainWindow):
                 padding: 0 14px;
                 text-align: center;
             }
-            QPushButton#languageButton:hover {
+            QPushButton#languageButton:hover,
+            QPushButton#themeButton:hover {
                 background: rgba(64, 214, 255, 0.14);
                 border-color: rgba(64, 214, 255, 0.48);
             }
-            QPushButton#languageButton:pressed {
+            QPushButton#languageButton:pressed,
+            QPushButton#themeButton:pressed {
                 background: rgba(64, 214, 255, 0.22);
             }
             QPushButton#menuButton,
@@ -1404,6 +1809,11 @@ class MainClef(QMainWindow, Ui_MainWindow):
                 background: rgba(255, 255, 255, 0.055);
                 border: 1px solid rgba(255, 255, 255, 0.10);
                 border-radius: 16px;
+            }
+            QFrame#previewFrame {
+                background: #151b2c;
+                border: 1px solid rgba(64, 214, 255, 0.18);
+                border-radius: 18px;
             }
             QFrame#stepCard {
                 background: rgba(255, 255, 255, 0.08);
@@ -1522,6 +1932,22 @@ class MainClef(QMainWindow, Ui_MainWindow):
                 color: #f7f9ff;
                 font-weight: 700;
             }
+            QLabel#previewTitle {
+                color: #f7f9ff;
+                font-size: 16px;
+                font-weight: 900;
+            }
+            QLabel#previewHint {
+                color: #a3b1c8;
+                font-size: 13px;
+                font-weight: 600;
+            }
+            QLabel#annotationPreview {
+                background: rgba(8, 10, 18, 0.44);
+                border: 1px solid rgba(255, 255, 255, 0.10);
+                border-radius: 14px;
+                padding: 6px;
+            }
             QCheckBox {
                 color: #dbe7ff;
                 font-size: 14px;
@@ -1547,10 +1973,90 @@ class MainClef(QMainWindow, Ui_MainWindow):
                 min-height: 36px;
                 border: 1px solid rgba(255, 255, 255, 0.12);
                 border-radius: 14px;
-                padding: 4px 8px;
+                padding: 4px 32px 4px 10px;
                 background: rgba(255, 255, 255, 0.08);
                 color: #f7f9ff;
                 font-weight: 700;
+            }
+            QSpinBox::up-button {
+                subcontrol-origin: border;
+                subcontrol-position: top right;
+                width: 24px;
+                border-left: 1px solid rgba(255, 255, 255, 0.12);
+                border-top-right-radius: 13px;
+                background: rgba(255, 255, 255, 0.07);
+            }
+            QSpinBox::down-button {
+                subcontrol-origin: border;
+                subcontrol-position: bottom right;
+                width: 24px;
+                border-left: 1px solid rgba(255, 255, 255, 0.12);
+                border-bottom-right-radius: 13px;
+                background: rgba(255, 255, 255, 0.07);
+            }
+            QSpinBox::up-button:hover,
+            QSpinBox::down-button:hover {
+                background: rgba(64, 214, 255, 0.20);
+            }
+            QSpinBox::up-arrow {
+                image: none;
+                width: 0;
+                height: 0;
+                border-left: 4px solid transparent;
+                border-right: 4px solid transparent;
+                border-bottom: 5px solid #f7f9ff;
+            }
+            QSpinBox::down-arrow {
+                image: none;
+                width: 0;
+                height: 0;
+                border-left: 4px solid transparent;
+                border-right: 4px solid transparent;
+                border-top: 5px solid #f7f9ff;
+            }
+            QComboBox#modeCombo {
+                min-width: 112px;
+                min-height: 36px;
+                border: 1px solid rgba(255, 255, 255, 0.14);
+                border-radius: 14px;
+                padding: 4px 34px 4px 12px;
+                background: rgba(255, 255, 255, 0.08);
+                color: #f7f9ff;
+                font-weight: 800;
+            }
+            QComboBox#modeCombo::drop-down {
+                subcontrol-origin: border;
+                subcontrol-position: top right;
+                width: 30px;
+                border-left: 1px solid rgba(255, 255, 255, 0.12);
+                border-top-right-radius: 13px;
+                border-bottom-right-radius: 13px;
+                background: rgba(255, 255, 255, 0.07);
+            }
+            QComboBox#modeCombo::drop-down:hover {
+                background: rgba(64, 214, 255, 0.20);
+            }
+            QComboBox#modeCombo::down-arrow {
+                image: none;
+                width: 0;
+                height: 0;
+                border-left: 5px solid transparent;
+                border-right: 5px solid transparent;
+                border-top: 6px solid #f7f9ff;
+            }
+            QComboBox#modeCombo:hover {
+                border-color: rgba(64, 214, 255, 0.42);
+                background: rgba(64, 214, 255, 0.10);
+            }
+            QComboBox#modeCombo:disabled {
+                color: #68768f;
+                background: rgba(255, 255, 255, 0.035);
+            }
+            QComboBox#modeCombo QAbstractItemView {
+                background: #101827;
+                color: #f7f9ff;
+                border: 1px solid rgba(64, 214, 255, 0.30);
+                selection-background-color: rgba(64, 214, 255, 0.28);
             }
             QTextEdit {
                 background: rgba(8, 10, 18, 0.86);
@@ -1606,7 +2112,246 @@ class MainClef(QMainWindow, Ui_MainWindow):
                 font-size: 14px;
             }
             """
-        )
+        light_style = """
+            QMainWindow, QWidget#centralwidget, QWidget#widget {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                    stop:0 #eaf7ff,
+                    stop:0.52 #f8fdff,
+                    stop:1 #dff4ff);
+                color: #08121f;
+            }
+            QWidget#Sidebar {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 rgba(255, 255, 255, 0.86),
+                    stop:1 rgba(224, 247, 255, 0.66));
+                border: 1px solid rgba(0, 92, 150, 0.18);
+            }
+            QStackedWidget,
+            QWidget#Home,
+            QWidget#about,
+            QWidget#page,
+            QLabel {
+                color: #08121f;
+                background: transparent;
+            }
+            QLabel#sidebarCaption,
+            QLabel#panelSubtitle,
+            QLabel#filesLabel,
+            QLabel#text,
+            QLabel#stepCaption,
+            QLabel#workflowNote,
+            QLabel#workflowItemCaption,
+            QLabel#progressStatus,
+            QLabel#dialogBody {
+                color: #48627e;
+            }
+            QPushButton,
+            QPushButton#secondaryButton,
+            QPushButton#languageButton,
+            QPushButton#themeButton {
+                background: rgba(255, 255, 255, 0.58);
+                color: #08121f;
+                border-color: rgba(0, 92, 150, 0.16);
+            }
+            QPushButton:hover,
+            QPushButton#secondaryButton:hover,
+            QPushButton#languageButton:hover,
+            QPushButton#themeButton:hover {
+                background: rgba(22, 215, 255, 0.14);
+                border-color: rgba(0, 140, 232, 0.42);
+            }
+            QPushButton:disabled {
+                color: rgba(8, 18, 31, 0.38);
+                background: rgba(255, 255, 255, 0.34);
+                border-color: rgba(0, 92, 150, 0.08);
+            }
+            QPushButton#primaryButton,
+            QPushButton#startButton {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                    stop:0 #16d7ff,
+                    stop:1 #008ce8);
+                color: #031018;
+                border-color: rgba(0, 140, 232, 0.46);
+            }
+            QPushButton#primaryButton:hover,
+            QPushButton#startButton:hover {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                    stop:0 #6eeaff,
+                    stop:1 #10a9f2);
+                border-color: rgba(22, 215, 255, 0.72);
+            }
+            QPushButton#homeButton,
+            QPushButton#aboutButton,
+            QPushButton#sheetsButton {
+                color: #08121f;
+                background: rgba(255, 255, 255, 0.36);
+            }
+            QPushButton#homeButton:hover,
+            QPushButton#aboutButton:hover,
+            QPushButton#sheetsButton:hover {
+                background: rgba(22, 215, 255, 0.12);
+                border-color: rgba(0, 140, 232, 0.20);
+            }
+            QPushButton[active="true"] {
+                color: #06121d;
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                    stop:0 rgba(0, 140, 232, 0.12),
+                    stop:0.12 rgba(22, 215, 255, 0.28),
+                    stop:0.5 rgba(255, 255, 255, 0.46),
+                    stop:0.88 rgba(22, 215, 255, 0.26),
+                    stop:1 rgba(0, 140, 232, 0.12));
+                border: 1px solid rgba(0, 140, 232, 0.24);
+            }
+            QPushButton#selectsheetButton {
+                border-color: rgba(0, 140, 232, 0.36);
+                background: rgba(255, 255, 255, 0.50);
+            }
+            QFrame#homePanel,
+            QFrame#processingPanel,
+            QFrame#aboutPanel,
+            QWidget#Logo,
+            QWidget#aboutText,
+            QWidget#logoAbout,
+            QWidget#picture,
+            QWidget#widget_2 {
+                background: rgba(255, 255, 255, 0.54);
+                border: 1px solid rgba(0, 92, 150, 0.16);
+            }
+            QFrame#authorFrame,
+            QFrame#outputFrame,
+            QFrame#stepCard,
+            QFrame#workflowPanel {
+                background: rgba(255, 255, 255, 0.48);
+                border: 1px solid rgba(0, 92, 150, 0.14);
+            }
+            QFrame#previewFrame {
+                background: #f8fdff;
+                border: 1px solid rgba(0, 140, 232, 0.16);
+            }
+            QScrollBar::handle:vertical {
+                background: rgba(0, 140, 232, 0.34);
+            }
+            QScrollBar::handle:vertical:hover {
+                background: rgba(0, 140, 232, 0.54);
+            }
+            QLabel#homeTitle,
+            QLabel#panelTitle,
+            QLabel#workflowTitle,
+            QLabel#workflowItemTitle,
+            QLabel#stepTitle,
+            QLabel#fieldLabel,
+            QLabel#dialogTitle {
+                color: #08121f;
+            }
+            QLabel#homeSubtitle {
+                color: #27415f;
+            }
+            QLabel#previewTitle {
+                color: #08121f;
+            }
+            QLabel#previewHint {
+                color: #48617e;
+            }
+            QLabel#annotationPreview {
+                background: rgba(255, 255, 255, 0.54);
+                border-color: rgba(0, 92, 150, 0.14);
+            }
+            QLabel#eyebrow,
+            QLabel#homeEyebrow,
+            QLabel#stepNumber {
+                color: #008ce8;
+            }
+            QLabel#statusPill {
+                color: #08121f;
+                background: rgba(22, 215, 255, 0.13);
+                border: 1px solid rgba(0, 140, 232, 0.26);
+            }
+            QLabel#workflowNumber {
+                color: #031018;
+                background: #16d7ff;
+            }
+            QCheckBox {
+                color: #27415f;
+            }
+            QCheckBox::indicator {
+                border: 1px solid rgba(0, 92, 150, 0.20);
+                background: rgba(255, 255, 255, 0.58);
+            }
+            QCheckBox::indicator:checked {
+                background: #008ce8;
+                border-color: #008ce8;
+            }
+            QSpinBox {
+                background: rgba(255, 255, 255, 0.58);
+                color: #08121f;
+                border-color: rgba(0, 92, 150, 0.16);
+            }
+            QSpinBox::up-button,
+            QSpinBox::down-button {
+                background: rgba(0, 140, 232, 0.08);
+                border-left: 1px solid rgba(0, 92, 150, 0.14);
+            }
+            QSpinBox::up-button:hover,
+            QSpinBox::down-button:hover {
+                background: rgba(0, 140, 232, 0.18);
+            }
+            QSpinBox::up-arrow {
+                border-left: 4px solid transparent;
+                border-right: 4px solid transparent;
+                border-bottom: 5px solid #08121f;
+            }
+            QSpinBox::down-arrow {
+                border-left: 4px solid transparent;
+                border-right: 4px solid transparent;
+                border-top: 5px solid #08121f;
+            }
+            QComboBox#modeCombo {
+                background: rgba(255, 255, 255, 0.58);
+                color: #08121f;
+                border-color: rgba(0, 92, 150, 0.16);
+            }
+            QComboBox#modeCombo::drop-down {
+                background: rgba(0, 140, 232, 0.08);
+                border-left: 1px solid rgba(0, 92, 150, 0.14);
+            }
+            QComboBox#modeCombo::drop-down:hover {
+                background: rgba(0, 140, 232, 0.18);
+            }
+            QComboBox#modeCombo::down-arrow {
+                border-left: 5px solid transparent;
+                border-right: 5px solid transparent;
+                border-top: 6px solid #08121f;
+            }
+            QComboBox#modeCombo QAbstractItemView {
+                background: #f8fdff;
+                color: #08121f;
+                border: 1px solid rgba(0, 140, 232, 0.24);
+                selection-background-color: rgba(0, 140, 232, 0.18);
+            }
+            QTextEdit {
+                background: rgba(248, 253, 255, 0.86);
+                color: #132943;
+                border: 1px solid rgba(0, 140, 232, 0.22);
+            }
+            QLabel#warningPill {
+                color: #805000;
+                background: rgba(245, 158, 11, 0.14);
+                border-color: rgba(245, 158, 11, 0.34);
+            }
+            QProgressBar {
+                background: rgba(0, 92, 150, 0.10);
+                color: #08121f;
+            }
+            QProgressBar::chunk {
+                background: #008ce8;
+            }
+            QDialog#appDialog {
+                background: #f8fdff;
+                border: 1px solid rgba(0, 140, 232, 0.28);
+            }
+        """
+        self.setStyleSheet(dark_style + (light_style if self.current_theme == "light" else ""))
+        self._apply_theme_assets()
 
 
 def main():
