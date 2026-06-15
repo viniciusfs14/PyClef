@@ -1289,7 +1289,18 @@ def process_score_files(file_list, bpm, progress_callback=None, output_options=N
         if hasattr(video_clip, "set_audio")
         else video_clip.with_audio(audio_clip)
     )
-    final_clip.write_videofile(str(video_path), codec='libx264', logger=None)
+    temp_aac_path = output_dir / f"_{output_stem}_aac_audio.m4a"
+    final_clip.write_videofile(
+        str(video_path),
+        codec='libx264',
+        audio_codec='aac',
+        audio_bitrate='192k',
+        audio_fps=config.SAMPLE_RATE,
+        temp_audiofile=str(temp_aac_path),
+        remove_temp=True,
+        ffmpeg_params=['-pix_fmt', 'yuv420p', '-movflags', '+faststart'],
+        logger=None,
+    )
     final_clip.close()
     audio_clip.close()
     video_clip.close()
