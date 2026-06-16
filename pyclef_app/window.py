@@ -1,7 +1,9 @@
+import base64
+import json
 import sys
 from pathlib import Path
 
-from PySide6.QtCore import QEasingCurve, QPropertyAnimation, QSize, QThread, QTimer, Qt, QUrl, Signal
+from PySide6.QtCore import QEasingCurve, QPropertyAnimation, QSize, QThread, QTimer, Qt, QUrl, QUrlQuery, Signal
 from PySide6.QtGui import QColor, QDesktopServices, QFont, QIcon, QPainter, QPen, QPixmap
 from PySide6.QtWidgets import (
     QApplication,
@@ -23,6 +25,13 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
 )
 
+try:
+    from PySide6.QtWebEngineCore import QWebEngineSettings
+    from PySide6.QtWebEngineWidgets import QWebEngineView
+except Exception:
+    QWebEngineSettings = None
+    QWebEngineView = None
+
 from .engine import process_score_files
 from .ui.mainPyclef import Ui_MainWindow
 from .ui.resources import *  # noqa: F401,F403
@@ -31,12 +40,29 @@ from .ui.resources import *  # noqa: F401,F403
 BASE_DIR = Path(__file__).resolve().parent
 WEBSITE_URL = "https://viniciusfs14.github.io/PyClef/"
 
+
+def configure_web_view(view):
+    if QWebEngineSettings is None:
+        return
+    settings = view.settings()
+    attribute_root = getattr(QWebEngineSettings, "WebAttribute", QWebEngineSettings)
+    for attribute_name, enabled in (
+        ("JavascriptEnabled", True),
+        ("LocalContentCanAccessRemoteUrls", True),
+        ("LocalContentCanAccessFileUrls", True),
+        ("PlaybackRequiresUserGesture", False),
+    ):
+        attribute = getattr(attribute_root, attribute_name, None)
+        if attribute is not None:
+            settings.setAttribute(attribute, enabled)
+
 TRANSLATIONS = {
     "en": {
         "sidebar_caption": "Sheet music to audio",
         "language_button": "Português",
         "home_nav": "Home",
         "scores_nav": "Scores",
+        "midi_nav": "MIDI Player",
         "about_nav": "About",
         "home_eyebrow": "Welcome to",
         "home_title": "PyClef",
@@ -91,6 +117,13 @@ TRANSLATIONS = {
         "open_video": "Open video",
         "open_audio": "Open audio",
         "open_midi": "Open MIDI",
+        "open_midi_player": "MIDI player",
+        "midi_page_eyebrow": "SoundFont playback",
+        "midi_page_title": "MIDI Player",
+        "midi_page_hint": "Open a generated MIDI file or use the selector inside the player. The piano SoundFont is loaded automatically.",
+        "midi_page_unavailable": "The embedded MIDI player is unavailable in this installation.",
+        "midi_player_unavailable_title": "MIDI player unavailable",
+        "midi_player_unavailable_msg": "The embedded MIDI player is unavailable in this installation. PyClef will open the MIDI file with the system app instead.",
         "about_text": "PyClef is a hybrid approach to Optical Music Recognition, combining deep-learning detection with structural staff modeling.\n\nThe desktop workflow is direct: choose pages, set the BPM, and generate synchronized audio, MIDI, video, and annotated score outputs.",
         "about_eyebrow": "About PyClef",
         "about_title": "A practical OMR tool for musicians and students.",
@@ -122,6 +155,7 @@ TRANSLATIONS = {
         "language_button": "English",
         "home_nav": "Inicio",
         "scores_nav": "Partituras",
+        "midi_nav": "Player MIDI",
         "about_nav": "Sobre",
         "home_eyebrow": "Bem-vindo ao",
         "home_title": "PyClef",
@@ -176,6 +210,13 @@ TRANSLATIONS = {
         "open_video": "Abrir video",
         "open_audio": "Abrir audio",
         "open_midi": "Abrir MIDI",
+        "open_midi_player": "Player MIDI",
+        "midi_page_eyebrow": "Reproducao SoundFont",
+        "midi_page_title": "Player MIDI",
+        "midi_page_hint": "Abra um MIDI gerado ou use o seletor dentro do player. O SoundFont de piano e carregado automaticamente.",
+        "midi_page_unavailable": "O player MIDI embutido nao esta disponivel nesta instalacao.",
+        "midi_player_unavailable_title": "Player MIDI indisponivel",
+        "midi_player_unavailable_msg": "O player MIDI embutido nao esta disponivel nesta instalacao. O PyClef vai abrir o MIDI no aplicativo padrao do sistema.",
         "about_text": "PyClef e uma abordagem hibrida para Reconhecimento Optico de Partituras Musicais, integrando deteccao por aprendizado profundo com modelagem estrutural da pauta.\n\nO fluxo desktop e direto: escolha as paginas, ajuste o BPM e gere audio, MIDI, video sincronizado e partituras anotadas.",
         "about_eyebrow": "Sobre o PyClef",
         "about_title": "Uma ferramenta OMR pratica para musicos e estudantes.",
@@ -301,6 +342,60 @@ class ProcessingThread(QThread):
             self.finished.emit(False, {})
 
 
+class MidiPlayerWindow(QMainWindow):
+    def __init__(self, midi_path=None, parent=None):
+        super().__init__(parent)
+        self.midi_path = Path(midi_path) if midi_path else None
+
+        title = "PyClef MIDI Player"
+        if self.midi_path:
+            title = f"{title} - {self.midi_path.name}"
+        self.setWindowTitle(title)
+        self.setMinimumSize(1120, 720)
+        self.resize(1280, 820)
+
+        self.web_view = QWebEngineView(self)
+        self.setCentralWidget(self.web_view)
+        self._configure_web_settings()
+        self.web_view.loadFinished.connect(self._inject_midi_file)
+
+        player_url = QUrl.fromLocalFile(str(BASE_DIR / "player" / "midi_player.html"))
+        if self.midi_path:
+            query = QUrlQuery()
+            query.addQueryItem("name", self.midi_path.name)
+            player_url.setQuery(query)
+        self.web_view.setUrl(player_url)
+
+    def _configure_web_settings(self):
+        configure_web_view(self.web_view)
+
+    def _inject_midi_file(self, ok):
+        if not ok or not self.midi_path or not self.midi_path.exists():
+            return
+        try:
+            encoded = base64.b64encode(self.midi_path.read_bytes()).decode("ascii")
+        except OSError:
+            return
+
+        script = (
+            "if (window.pyclefLoadMidiBase64) { "
+            f"window.pyclefLoadMidiBase64({json.dumps(encoded)}, {json.dumps(self.midi_path.name)}); "
+            "}"
+        )
+        self.web_view.page().runJavaScript(script)
+
+    def closeEvent(self, event):
+        try:
+            self.web_view.page().runJavaScript(
+                "if (window.pyclefStopPlayback) { window.pyclefStopPlayback(); }"
+            )
+            self.web_view.stop()
+            self.web_view.setUrl(QUrl("about:blank"))
+        except RuntimeError:
+            pass
+        super().closeEvent(event)
+
+
 class MainClef(QMainWindow, Ui_MainWindow):
     def __init__(self):
         super().__init__()
@@ -309,6 +404,7 @@ class MainClef(QMainWindow, Ui_MainWindow):
         self.selected_files = []
         self.result_files = {}
         self.processing_thread = None
+        self.midi_player_window = None
         self._sidebar_open = True
         self.language = "en"
         self.current_theme = "dark"
@@ -397,8 +493,14 @@ class MainClef(QMainWindow, Ui_MainWindow):
         self.homeButton = self._replace_nav_button(self.homeButton)
         self.aboutButton = self._replace_nav_button(self.aboutButton)
         self.sheetsButton = self._replace_nav_button(self.sheetsButton)
+        self.midiButton = NeonNavButton(self.verticaloptions)
+        self.midiButton.setObjectName("midiButton")
+        self.midiButton.setCursor(Qt.PointingHandCursor)
+        self.midiButton.setMinimumHeight(56)
+        self.midiButton.setSizePolicy(self.sheetsButton.sizePolicy())
         self.verticalLayout.addWidget(self.homeButton)
         self.verticalLayout.addWidget(self.sheetsButton)
+        self.verticalLayout.addWidget(self.midiButton)
         self.verticalLayout.addWidget(self.aboutButton)
         self.verticalLayout.addWidget(self.language_button, 0, Qt.AlignHCenter)
         self.verticalLayout.addWidget(self.theme_button, 0, Qt.AlignHCenter)
@@ -1009,6 +1111,7 @@ class MainClef(QMainWindow, Ui_MainWindow):
         self.homeButton.clicked.connect(lambda: self._set_active_page(self.Home, self.homeButton))
         self.aboutButton.clicked.connect(lambda: self._set_active_page(self.about, self.aboutButton))
         self.sheetsButton.clicked.connect(lambda: self._set_active_page(self.page, self.sheetsButton))
+        self.midiButton.clicked.connect(self.open_midi_page)
 
         self.home_select_button.clicked.connect(self.open_scores_page)
         self.selectsheetButton.clicked.connect(self.open_file_dialog)
@@ -1032,7 +1135,7 @@ class MainClef(QMainWindow, Ui_MainWindow):
         self.open_annotations_button.clicked.connect(lambda: self.open_result("annotations"))
         self.open_video_button.clicked.connect(lambda: self.open_result("video"))
         self.open_audio_button.clicked.connect(lambda: self.open_result("audio"))
-        self.open_midi_button.clicked.connect(lambda: self.open_result("midi"))
+        self.open_midi_button.clicked.connect(self.open_midi_player)
         self.annotation_preview_image.mousePressEvent = lambda event: self.open_result("annotations")
         self.website.mousePressEvent = lambda event: self.open_website()
         self._sync_output_controls(False)
@@ -1041,6 +1144,9 @@ class MainClef(QMainWindow, Ui_MainWindow):
 
     def open_scores_page(self):
         self._set_active_page(self.page, self.sheetsButton)
+
+    def open_midi_page(self):
+        self._open_midi_player_window(self._result_path("midi"))
 
     def _sync_output_controls(self, checked):
         for checkbox in (
@@ -1233,7 +1339,7 @@ class MainClef(QMainWindow, Ui_MainWindow):
         self._set_active_page(self.stackedWidget.currentWidget(), self._active_nav_button())
 
     def _active_nav_button(self):
-        for nav_button in (self.homeButton, self.sheetsButton, self.aboutButton):
+        for nav_button in (self.homeButton, self.sheetsButton, self.midiButton, self.aboutButton):
             if nav_button.property("active") == True:
                 return nav_button
         return self.homeButton
@@ -1270,6 +1376,7 @@ class MainClef(QMainWindow, Ui_MainWindow):
         self.theme_button.setToolTip(self._theme_button_tooltip())
         self.homeButton.setText(self.tr("home_nav"))
         self.sheetsButton.setText(self.tr("scores_nav"))
+        self.midiButton.setText(self.tr("midi_nav"))
         self.aboutButton.setText(self.tr("about_nav"))
 
         self.home_eyebrow.setText(self.tr("home_eyebrow"))
@@ -1314,7 +1421,7 @@ class MainClef(QMainWindow, Ui_MainWindow):
         self.open_annotations_button.setText(self.tr("open_annotations"))
         self.open_video_button.setText(self.tr("open_video"))
         self.open_audio_button.setText(self.tr("open_audio"))
-        self.open_midi_button.setText(self.tr("open_midi"))
+        self.open_midi_button.setText(self.tr("open_midi_player"))
         self.selectsheetButton.setToolTip(self.tr("select_scores"))
         self.text.setText(self.tr("about_text"))
         self.about_eyebrow.setText(self.tr("about_eyebrow"))
@@ -1332,7 +1439,7 @@ class MainClef(QMainWindow, Ui_MainWindow):
 
     def _set_active_page(self, page, button):
         self.stackedWidget.setCurrentWidget(page)
-        for nav_button in (self.homeButton, self.aboutButton, self.sheetsButton):
+        for nav_button in (self.homeButton, self.aboutButton, self.sheetsButton, self.midiButton):
             is_active = nav_button is button
             nav_button.setProperty("active", is_active)
             if is_active:
@@ -1519,14 +1626,53 @@ class MainClef(QMainWindow, Ui_MainWindow):
         self.log_output.append(str(message))
         self.log_output.verticalScrollBar().setValue(self.log_output.verticalScrollBar().maximum())
 
-    def open_result(self, key):
+    def _result_path(self, key):
         path = self.result_files.get(key)
         if isinstance(path, list):
             path = path[0] if path else None
-        if not path or not Path(path).exists():
+        if not path:
+            return None
+        path = Path(path)
+        return path if path.exists() else None
+
+    def open_result(self, key):
+        path = self._result_path(key)
+        if not path:
             self.show_message(self.tr("missing_title"), self.tr("missing_msg"))
             return
-        QDesktopServices.openUrl(QUrl.fromLocalFile(path))
+        QDesktopServices.openUrl(QUrl.fromLocalFile(str(path)))
+
+    def _open_midi_player_window(self, midi_path=None):
+        midi_path = Path(midi_path) if midi_path else None
+        if midi_path and not midi_path.exists():
+            midi_path = None
+
+        if QWebEngineView is None:
+            if midi_path:
+                self.show_message(
+                    self.tr("midi_player_unavailable_title"),
+                    self.tr("midi_player_unavailable_msg"),
+                )
+                QDesktopServices.openUrl(QUrl.fromLocalFile(str(midi_path)))
+            else:
+                self.show_message(
+                    self.tr("midi_player_unavailable_title"),
+                    self.tr("midi_page_unavailable"),
+                )
+            return
+
+        self.midi_player_window = MidiPlayerWindow(midi_path, self)
+        self.midi_player_window.show()
+        self.midi_player_window.raise_()
+        self.midi_player_window.activateWindow()
+
+    def open_midi_player(self):
+        midi_path = self._result_path("midi")
+        if not midi_path:
+            self.show_message(self.tr("missing_title"), self.tr("missing_msg"))
+            return
+
+        self._open_midi_player_window(midi_path)
 
     def show_message(self, title, message):
         dialog = QDialog(self)
@@ -1736,7 +1882,8 @@ class MainClef(QMainWindow, Ui_MainWindow):
             QPushButton#menuButton,
             QPushButton#homeButton,
             QPushButton#aboutButton,
-            QPushButton#sheetsButton {
+            QPushButton#sheetsButton,
+            QPushButton#midiButton {
                 color: #f8fafc;
                 background: rgba(255, 255, 255, 0.035);
                 border: 1px solid transparent;
@@ -1750,6 +1897,7 @@ class MainClef(QMainWindow, Ui_MainWindow):
             QPushButton#homeButton:hover,
             QPushButton#aboutButton:hover,
             QPushButton#sheetsButton:hover,
+            QPushButton#midiButton:hover,
             QPushButton#menuButton:hover {
                 background: rgba(255,255,255,0.10);
                 border-color: rgba(255, 255, 255, 0.10);
@@ -2182,13 +2330,15 @@ class MainClef(QMainWindow, Ui_MainWindow):
             }
             QPushButton#homeButton,
             QPushButton#aboutButton,
-            QPushButton#sheetsButton {
+            QPushButton#sheetsButton,
+            QPushButton#midiButton {
                 color: #08121f;
                 background: rgba(255, 255, 255, 0.36);
             }
             QPushButton#homeButton:hover,
             QPushButton#aboutButton:hover,
-            QPushButton#sheetsButton:hover {
+            QPushButton#sheetsButton:hover,
+            QPushButton#midiButton:hover {
                 background: rgba(22, 215, 255, 0.12);
                 border-color: rgba(0, 140, 232, 0.20);
             }

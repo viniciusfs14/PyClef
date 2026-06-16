@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PyClef MIDI Player</title>
+    <link rel="stylesheet" href="midi_player.css">
+    <script src="https://cdn.jsdelivr.net/npm/js-synthesizer@1.13.0/externals/libfluidsynth-2.4.6.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/js-synthesizer@1.13.0/dist/js-synthesizer.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tonejs/midi@2.0.28/build/Midi.min.js"></script>
+    <script defer src="midi_player.js"></script>
+</head>
+<body>
+    <main class="shell">
+        <section class="topbar">
+            <div>
+                <p class="eyebrow">PyClef MIDI</p>
+                <h1>Playback preview</h1>
+            </div>
+            <div class="transport">
+                <button id="select-midi" class="button secondary" type="button">Select MIDI</button>
+                <button id="load-soundfont" class="button secondary" type="button">Reload piano</button>
+                <button id="play-button" class="button primary" type="button" disabled>Play</button>
+                <button id="stop-button" class="button secondary" type="button" disabled>Stop</button>
+            </div>
+            <input id="midi-file" type="file" accept=".mid,.midi,audio/midi" hidden>
+        </section>
+
+        <section class="status-row">
+            <div class="status-pill">
+                <span class="dot" id="status-dot"></span>
+                <span id="status-text">Loading piano...</span>
+            </div>
+            <div class="meta">
+                <span id="midi-name">No file loaded</span>
+                <span id="note-count">0 notes</span>
+                <span id="duration">0:00</span>
+            </div>
+            <label class="volume">
+                <span>Volume</span>
+                <input id="volume-slider" type="range" min="0" max="120" value="86">
+            </label>
+        </section>
+
+        <section class="visualizer">
+            <div class="waterfall" id="waterfall">
+                <div class="empty-state" id="empty-state">
+                    <strong>Load or generate a MIDI file</strong>
+                    <span>The notes will appear here in sync with playback.</span>
+                </div>
+                <div class="play-line"></div>
+                <div class="note-layer" id="note-layer"></div>
+            </div>
+            <div class="keyboard" id="keyboard" aria-label="Piano keyboard"></div>
+        </section>
+
+        <section class="progress">
+            <div class="progress-bar">
+                <span id="progress-fill"></span>
+            </div>
+            <span id="time-label">0:00 / 0:00</span>
+        </section>
+    </main>
+</body>
+</html>

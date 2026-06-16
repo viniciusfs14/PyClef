@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pyclef"
-version = "1.0.5"
+version = "1.0.6"
 description = "Desktop OMR tool for turning sheet music into annotations, audio, MIDI, and synchronized video."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -45,9 +45,10 @@ pyclef = "pyclef:Pyclef"
 
 [tool.setuptools]
 py-modules = ["pyclef"]
-packages = ["pyclef_app", "pyclef_app.model", "pyclef_app.ui", "pyclef_app.ui.flags"]
+packages = ["pyclef_app", "pyclef_app.model", "pyclef_app.player", "pyclef_app.ui", "pyclef_app.ui.flags"]
 include-package-data = true
 
 [tool.setuptools.package-data]
 pyclef_app = ["model/README.md"]
+"pyclef_app.player" = ["*.html", "*.css", "*.js"]
 "pyclef_app.ui" = ["*.png", "*.ui", "*.qrc", "flags/*.png"]

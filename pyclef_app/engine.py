@@ -169,6 +169,11 @@ SYSTEM_GAP_BEATS = rhythm.SYSTEM_GAP_BEATS
 STAFF_IDS = {134, 207}
 BRACE_IDS = {0, 136}
 RHYTHMIC_MARKERS = ("quarter", "half", "whole", "note")
+ACCIDENTAL_TYPES = {"sharp": "s", "flat": "b"}
+DYNAMIC_TYPES = {"dynamicP", "dynamicMP", "dynamicMF", "dynamicF"}
+
+def clamp_value(value, minimum, maximum):
+    return max(minimum, min(maximum, value))
 
 def rects_overlap(a, b, margin=0):
     return not (
@@ -461,6 +466,103 @@ def draw_annotation_legend(img, annotation_mode, language):
 def is_rhythmic_object(otype):
     return any(marker in otype for marker in RHYTHMIC_MARKERS)
 
+def accidental_label(accidental):
+    if accidental == "s":
+        return "#"
+    if accidental == "b":
+        return "b"
+    return ""
+
+def label_note(note_base, accidental, octave):
+    return f"{note_base}{accidental_label(accidental)}{octave}"
+
+def build_key_signature(accidentals, first_music_x, staff_coords):
+    if first_music_x is None:
+        return {}
+
+    staff_left, _, staff_right, _ = staff_coords
+    staff_width = max(1, staff_right - staff_left)
+    key_region_right = min(first_music_x - 6, staff_left + staff_width * 0.24)
+    key_signature = {}
+
+    for accidental in sorted(accidentals, key=lambda item: item["x"]):
+        if accidental["x"] <= key_region_right:
+            key_signature[accidental["note"]] = accidental["accidental"]
+
+    return key_signature
+
+def infer_note_accidental(note_obj, note_base, octave, staff_info, system_width):
+    accidentals = staff_info.get("accidentals", [])
+    if not accidentals:
+        return staff_info.get("key_signature", {}).get(note_base, "")
+
+    step = max(1, staff_info["step"])
+    x_window = max(28, min(90, system_width * 0.04))
+    y_window = max(12, step * 1.65)
+    note_x = note_obj["x"]
+    note_y = note_obj["y"]
+
+    local_candidates = [
+        accidental
+        for accidental in accidentals
+        if 0 <= note_x - accidental["x"] <= x_window
+        and accidental["note"] == note_base
+        and accidental["octave"] == octave
+        and abs(note_y - accidental["y"]) <= y_window
+    ]
+
+    if local_candidates:
+        local_candidates.sort(
+            key=lambda accidental: (
+                abs(note_x - accidental["x"]),
+                abs(note_y - accidental["y"]),
+            )
+        )
+        return local_candidates[0]["accidental"]
+
+    return staff_info.get("key_signature", {}).get(note_base, "")
+
+def collect_system_dynamics(system, objects):
+    bounds = system_bounds(system)
+    staff_height = average_staff_height(system)
+    y_top = bounds[1] - staff_height * 1.6
+    y_bottom = bounds[3] + staff_height * 1.9
+    dynamics = []
+
+    for obj in objects:
+        dynamic_type = config.ID_MAP.get(obj["id"], "")
+        if dynamic_type not in DYNAMIC_TYPES:
+            continue
+        if not (bounds[0] - 40 <= obj["x"] <= bounds[2] + 40):
+            continue
+        if not (y_top <= obj["y"] <= y_bottom):
+            continue
+        dynamics.append({
+            "x": obj["x"],
+            "y": obj["y"],
+            "type": dynamic_type,
+        })
+
+    return sorted(dynamics, key=lambda item: item["x"])
+
+def infer_note_dynamic(note_obj, staff_info):
+    dynamics = staff_info.get("dynamics", [])
+    if not dynamics:
+        return "default"
+
+    previous = [dynamic for dynamic in dynamics if dynamic["x"] <= note_obj["x"] + 8]
+    if not previous:
+        return "default"
+
+    return max(previous, key=lambda item: item["x"])["type"]
+
+def dynamic_audio_velocity(dynamic_type):
+    return float(config.VOLUME_MAP.get(dynamic_type, config.VOLUME_MAP["default"]))
+
+def dynamic_midi_velocity(dynamic_type):
+    velocity = dynamic_audio_velocity(dynamic_type)
+    return int(clamp_value(round(velocity * 118), 32, 122))
+
 def duration_for_type(otype, ms_per_beat):
     return rhythm.duration_ms_for_type(otype, ms_per_beat)
 
@@ -515,6 +617,42 @@ def split_indices_by_staff_gaps(indices, staves, gap_threshold):
             groups.append([idx])
     return groups
 
+def consolidate_duplicate_staves(staves):
+    if len(staves) < 2:
+        return sorted(staves, key=lambda box: box[1])
+
+    ordered = sorted(staves, key=lambda box: (box[1] + box[3]) / 2)
+    heights = [max(1, float(staff[3] - staff[1])) for staff in ordered]
+    center_threshold = max(18, float(np.median(heights)) * 0.58)
+    groups = []
+
+    for staff in ordered:
+        center_y = (staff[1] + staff[3]) / 2
+        if not groups:
+            groups.append([staff])
+            continue
+
+        previous = groups[-1]
+        previous_center = np.mean([(box[1] + box[3]) / 2 for box in previous])
+        if abs(center_y - previous_center) <= center_threshold:
+            previous.append(staff)
+        else:
+            groups.append([staff])
+
+    consolidated = []
+    for group in groups:
+        if len(group) == 1:
+            consolidated.append(group[0])
+            continue
+
+        widest = max(group, key=lambda box: box[2] - box[0])
+        merged = widest.copy()
+        merged[0] = min(box[0] for box in group)
+        merged[2] = max(box[2] for box in group)
+        consolidated.append(merged)
+
+    return sorted(consolidated, key=lambda box: box[1])
+
 def staff_clef_hint(staff_index, staff_coords, staves, objects):
     if objects:
         system = staves
@@ -550,6 +688,7 @@ def split_staff_group_by_clefs(group_indices, staves, objects):
 
 def group_staves_by_braces(staves, braces, objects=None):
     objects = objects or []
+    staves = consolidate_duplicate_staves(staves)
     systems = []
     used_staves = set()
     gap_threshold = infer_staff_gap_threshold(staves)
@@ -577,7 +716,7 @@ def group_staves_by_braces(staves, braces, objects=None):
                 if (staves[idx][2] - staves[idx][0]) >= max_width * 0.72
             ]
             candidates = full_width_indices if len(full_width_indices) >= 2 else system_indices
-            group = [candidates[0], candidates[-1]]
+            group = list(candidates)
             for idx in system_indices:
                 used_staves.add(idx)
             systems.append([staves[idx] for idx in group])
@@ -623,7 +762,7 @@ def average_staff_height(system):
     return float(np.mean([max(1, staff[3] - staff[1]) for staff in system]))
 
 def should_merge_system_pair(upper_system, lower_system):
-    if len(upper_system) != 1 or len(lower_system) < 2:
+    if len(upper_system) != 1 or len(lower_system) != 2:
         return False
 
     upper_bounds = system_bounds(upper_system)
@@ -632,12 +771,12 @@ def should_merge_system_pair(upper_system, lower_system):
         return False
 
     overlap = horizontal_overlap_ratio(upper_bounds, lower_bounds)
-    if overlap < 0.58:
+    if overlap < 0.45:
         return False
 
     gap = lower_bounds[1] - upper_bounds[3]
     staff_height = (average_staff_height(upper_system) + average_staff_height(lower_system)) / 2
-    max_gap = max(220, staff_height * 7.5)
+    max_gap = max(260, staff_height * 9.0)
     return gap <= max_gap
 
 def merge_playback_systems(systems):
@@ -705,6 +844,7 @@ def build_staff_note_columns(system, objects):
     system_left = min(staff[0] for staff in system)
     system_right = max(staff[2] for staff in system)
     system_width = max(1, system_right - system_left)
+    system_dynamics = collect_system_dynamics(system, objects)
     note_width = estimate_note_width(objects, max(8, system_width * 0.006))
     staff_tolerance = max(6, min(13, note_width * 0.42, system_width * 0.007))
     cross_staff_tolerance = max(10, min(24, note_width * 0.78, system_width * 0.014))
@@ -716,11 +856,29 @@ def build_staff_note_columns(system, objects):
             if s_coords[1] - 40 < o['y'] < s_coords[3] + 40
         ]
         clef = infer_staff_clef(system, s_idx, s_coords, objects)
+        accidental_objs = []
+        for o in objs_pauta:
+            accidental = ACCIDENTAL_TYPES.get(config.ID_MAP.get(o['id'], ""))
+            if not accidental:
+                continue
+            acc_note, acc_octave = vision_utils.calculate_pitch(
+                o['y'],
+                s_coords[3],
+                step,
+                clef,
+            )
+            accidental_objs.append({
+                **o,
+                "accidental": accidental,
+                "note": acc_note,
+                "octave": acc_octave,
+            })
         rhythmic_objs = [
             {**o, "staff_index": s_idx}
             for o in objs_pauta
             if is_rhythmic_object(config.ID_MAP.get(o['id'], ""))
         ]
+        first_music_x = min((o["x"] for o in rhythmic_objs), default=None)
         staff_specific_columns = annotate_local_column_spacing(
             group_objects_by_x(rhythmic_objs, staff_tolerance),
             max(1, system_width / SYSTEM_WIDTH_BEATS),
@@ -732,6 +890,9 @@ def build_staff_note_columns(system, objects):
             "coords": s_coords,
             "step": step,
             "clef": clef,
+            "accidentals": accidental_objs,
+            "key_signature": build_key_signature(accidental_objs, first_music_x, s_coords),
+            "dynamics": system_dynamics,
         })
 
     system_columns = []
@@ -820,6 +981,46 @@ def interpolate_playhead(previous_event, next_event, t_ms):
         'vol': previous_event.get('vol', 0.8),
     }
 
+def draw_soft_circle(frame, center, radius, color, alpha):
+    overlay = frame.copy()
+    cv2.circle(overlay, center, radius, color, -1, cv2.LINE_AA)
+    cv2.addWeighted(overlay, alpha, frame, 1 - alpha, 0, frame)
+
+def draw_soft_line(frame, start, end, color, thickness, alpha):
+    overlay = frame.copy()
+    cv2.line(overlay, start, end, color, thickness, cv2.LINE_AA)
+    cv2.addWeighted(overlay, alpha, frame, 1 - alpha, 0, frame)
+
+def draw_reading_marker(frame, playhead, t_ms):
+    x = int(playhead['x'])
+    y = int(playhead['y'])
+    pulse = 0.5 + 0.5 * np.sin(t_ms / 190)
+    glow_color = (255, 205, 80)
+    core_color = (255, 245, 210)
+
+    draw_soft_circle(frame, (x, y), int(40 + 8 * pulse), glow_color, 0.16)
+    draw_soft_circle(frame, (x, y), int(22 + 5 * pulse), glow_color, 0.24)
+    draw_soft_line(frame, (max(0, x - 58), y), (min(frame.shape[1] - 1, x + 34), y), glow_color, 5, 0.22)
+    draw_soft_line(frame, (max(0, x - 38), y), (min(frame.shape[1] - 1, x + 18), y), core_color, 2, 0.52)
+    cv2.circle(frame, (x, y), 9, glow_color, 2, cv2.LINE_AA)
+    cv2.circle(frame, (x, y), 3, core_color, -1, cv2.LINE_AA)
+
+def draw_active_note_highlight(frame, event, t_ms):
+    x = int(event['x'])
+    y = int(event['y'])
+    duration = max(1, event['dur'])
+    progress = min(1, max(0, (t_ms - event['time']) / duration))
+    pulse = 0.5 + 0.5 * np.sin(progress * np.pi)
+    volume = max(0.35, min(1.0, event.get('vol', 0.72)))
+    halo_color = (64, 214, 255)
+    core_color = (255, 255, 255)
+    radius = int(14 + 12 * pulse * volume)
+
+    draw_soft_circle(frame, (x, y), radius + 20, halo_color, 0.09 + 0.06 * volume)
+    draw_soft_circle(frame, (x, y), radius + 6, halo_color, 0.16 + 0.07 * volume)
+    cv2.circle(frame, (x, y), radius, halo_color, 2, cv2.LINE_AA)
+    cv2.circle(frame, (x, y), 4, core_color, -1, cv2.LINE_AA)
+
 def render_video_frame(page_frames, video_events, active_events, t_ms, transition_ms=450):
     previous_event, next_event = get_event_context(video_events, t_ms)
 
@@ -854,18 +1055,12 @@ def render_video_frame(page_frames, video_events, active_events, t_ms, transitio
 
     playhead = interpolate_playhead(previous_event, next_event, t_ms)
     if playhead and int(playhead['page']) == current_page:
-        x = int(playhead['x'])
-        y = int(playhead['y'])
-        cv2.line(frame, (x, 0), (x, frame.shape[0]), (255, 190, 60), 2)
-        cv2.circle(frame, (x, y), 12, (255, 190, 60), 2)
+        draw_reading_marker(frame, playhead, t_ms)
 
     for event in active_events:
         if event['page'] != current_page:
             continue
-        pulse = 0.65 + 0.35 * np.sin((t_ms - event['time']) / max(1, event['dur']) * np.pi)
-        radius = int(16 + 8 * pulse)
-        cv2.circle(frame, (int(event['x']), int(event['y'])), radius, (0, 0, 255), -1)
-        cv2.circle(frame, (int(event['x']), int(event['y'])), radius + 4, (255, 255, 255), 2)
+        draw_active_note_highlight(frame, event, t_ms)
 
     return frame
 
@@ -997,7 +1192,7 @@ def process_score_files(file_list, bpm, progress_callback=None, output_options=N
                     'conf': item.get('conf'),
                 })
 
-        staves.sort(key=lambda x: x[1])
+        staves = consolidate_duplicate_staves(staves)
         
         systems = merge_playback_systems(group_staves_by_braces(staves, braces, objects))
         system_sizes = ", ".join(str(len(system)) for system in systems) or "0"
@@ -1046,18 +1241,32 @@ def process_score_files(file_list, bpm, progress_callback=None, output_options=N
                         staff_info["step"],
                         staff_info["clef"],
                     )
+                    accidental = infer_note_accidental(
+                        o,
+                        nb,
+                        octv,
+                        staff_info,
+                        system_width,
+                    )
+                    dynamic_type = infer_note_dynamic(o, staff_info)
+                    audio_velocity = dynamic_audio_velocity(dynamic_type)
+                    midi_velocity = dynamic_midi_velocity(dynamic_type)
 
                     b = o['box'].astype(int)
                     note_infos.append({
                         "object": o,
                         "box": b,
-                        "label": f"{nb}{octv}",
+                        "label": label_note(nb, accidental, octv),
                         "note": nb,
+                        "accidental": accidental,
                         "octave": octv,
                         "duration": play_dur,
                         "notated_duration": dur,
                         "audio_duration": audio_dur,
                         "release_tail": tail,
+                        "dynamic": dynamic_type,
+                        "velocity": audio_velocity,
+                        "midi_velocity": midi_velocity,
                         "staff_index": o["staff_index"],
                         "color": staff_annotation_color(staff_info["clef"]),
                         "center": (int(o["x"]), int(o["y"])),
@@ -1069,12 +1278,15 @@ def process_score_files(file_list, bpm, progress_callback=None, output_options=N
 
                 for info in note_infos:
                     nb = info["note"]
+                    accidental = info["accidental"]
                     octv = info["octave"]
                     dur = info["notated_duration"]
                     play_dur = info["duration"]
                     release_tail = info["release_tail"]
-                    freq = audio_utils.get_frequency(nb, "", octv)
-                    midi_p = audio_utils.note_to_midi(nb, "", octv)
+                    velocity = info["velocity"]
+                    midi_velocity = info["midi_velocity"]
+                    freq = audio_utils.get_frequency(nb, accidental, octv)
+                    midi_p = audio_utils.note_to_midi(nb, accidental, octv)
                     if midi_p in played_in_column:
                         continue
                     played_in_column.add(midi_p)
@@ -1082,22 +1294,21 @@ def process_score_files(file_list, bpm, progress_callback=None, output_options=N
                     wave = audio_utils.generate_piano_sound(
                         freq,
                         dur,
-                        velocity=0.68,
+                        velocity=velocity,
                         release_ms=release_tail,
                         timbre=timbre,
                     )
                     tone = AudioSegment(wave.tobytes(), frame_rate=config.SAMPLE_RATE, sample_width=2, channels=1)
                     full_song = full_song.overlay(tone, position=column_time)
-                    column_end = max(column_end, column_time + len(tone))
 
-                    midi_events.append({'time': column_time, 'type': 'on', 'note': midi_p, 'vel': 92})
+                    midi_events.append({'time': column_time, 'type': 'on', 'note': midi_p, 'vel': midi_velocity})
                     midi_events.append({'time': column_time + int(dur), 'type': 'off', 'note': midi_p, 'vel': 0})
                     video_events.append({
                         'time': column_time,
                         'x': info["center"][0],
                         'y': info["center"][1],
                         'dur': play_dur,
-                        'vol': 0.72,
+                        'vol': velocity,
                         'page': p_idx,
                     })
 
@@ -1189,7 +1400,7 @@ def process_score_files(file_list, bpm, progress_callback=None, output_options=N
             cv2.imwrite(str(annotated_path), img_traduzido, [int(cv2.IMWRITE_JPEG_QUALITY), 95])
             annotated_files.append(str(annotated_path))
         if p_idx < len(pages_images) - 1:
-            global_time_ms += int(ms_per_beat * 1.0)
+            global_time_ms += rhythm.page_gap_ms(ms_per_beat)
         progress("page_done", page_end_percent, page=p_idx + 1)
 
     # Exportações Finais

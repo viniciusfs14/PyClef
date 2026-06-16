@@ -5,7 +5,8 @@ from . import config
 
 SYSTEM_WIDTH_BEATS = 24
 MIN_COLUMN_ADVANCE_BEATS = 0.48
-SYSTEM_GAP_BEATS = 0.42
+SYSTEM_GAP_BEATS = 0.0
+PAGE_GAP_BEATS = 0.0
 
 
 @dataclass
@@ -94,7 +95,7 @@ def build_column_timeline(note_columns, system_left, system_width, ms_per_beat):
     if not note_columns:
         return points
 
-    last_x = system_left
+    last_x = note_columns[0]["x"]
     current_beat = 0.0
     starts = []
     advances = []
@@ -152,3 +153,7 @@ def release_tail_ms(otype, gap_to_next, ms_per_beat):
 
 def system_gap_ms(ms_per_beat):
     return int(ms_per_beat * SYSTEM_GAP_BEATS)
+
+
+def page_gap_ms(ms_per_beat):
+    return int(ms_per_beat * PAGE_GAP_BEATS)
