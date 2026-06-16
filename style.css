@@ -196,6 +196,15 @@ a { color: inherit; }
     box-shadow: 0 0 28px rgba(64, 214, 255, 0.20), 0 16px 45px var(--shadow);
 }
 .btn-primary:hover { animation: button-glow 1.8s ease-in-out infinite; }
+.disabled-link {
+    cursor: default;
+    pointer-events: none;
+    opacity: 0.82;
+}
+.disabled-link:hover {
+    transform: none;
+    animation: none;
+}
 .icon-btn { width: 42px; height: 42px; padding: 0; }
 .flag-img { width: 20px; height: 14px; object-fit: cover; border-radius: 2px; }
 
