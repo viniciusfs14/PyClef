@@ -72,8 +72,8 @@ const content = {
         "doc-output-title": "Output files",
         "doc-output-text": "Depending on the selected options, a run can generate annotations, MP3, MIDI and MP4 files.",
         "guide-kicker": "Interface guide",
-        "guide-title": "Desktop workflow",
-        "guide-lead": "The interface is organized around file selection, output selection, progress logs and result review.",
+        "guide-title": "Desktop processing pipeline",
+        "guide-lead": "The desktop flow moves from score selection to progress tracking and result review. The screenshots adapt to the current website theme.",
         "guide-1-title": "Home",
         "guide-1-text": "Open the score workspace from the start screen.",
         "guide-2-title": "Scores",
@@ -130,6 +130,8 @@ const content = {
         "lower": "Lower",
         "higher": "Higher",
         "footer-text": "Python toolkit for Optical Music Recognition.",
+        "copy-code": "Copy",
+        "copied-code": "Copied",
         "lang-btn": "EN"
     },
     pt: {
@@ -205,8 +207,8 @@ const content = {
         "doc-output-title": "Arquivos gerados",
         "doc-output-text": "Dependendo das opções selecionadas, uma execução pode gerar anotações, MP3, MIDI e MP4.",
         "guide-kicker": "Guia da interface",
-        "guide-title": "Fluxo desktop",
-        "guide-lead": "A interface é organizada em seleção de arquivo, seleção de saídas, logs de progresso e revisão dos resultados.",
+        "guide-title": "Pipeline de processamento desktop",
+        "guide-lead": "O fluxo desktop vai da seleção da partitura ao acompanhamento do progresso e à revisão dos resultados. As imagens acompanham o tema atual do site.",
         "guide-1-title": "Home",
         "guide-1-text": "Abra o ambiente de partituras a partir da tela inicial.",
         "guide-2-title": "Partituras",
@@ -263,6 +265,8 @@ const content = {
         "lower": "Menor",
         "higher": "Maior",
         "footer-text": "Biblioteca Python para Reconhecimento Óptico de Partituras.",
+        "copy-code": "Copiar",
+        "copied-code": "Copiado",
         "lang-btn": "PT"
     }
 };
@@ -301,6 +305,25 @@ document.getElementById("theme-switch")?.addEventListener("click", () => {
     setTheme(isDark ? "light" : "dark");
 });
 
+const navbar = document.querySelector(".navbar");
+const mobileMenuToggle = document.getElementById("mobile-menu-toggle");
+
+mobileMenuToggle?.addEventListener("click", () => {
+    const isOpen = navbar?.classList.toggle("nav-open") || false;
+    mobileMenuToggle.setAttribute("aria-expanded", String(isOpen));
+    const icon = mobileMenuToggle.querySelector("i");
+    if (icon) icon.className = isOpen ? "fas fa-xmark" : "fas fa-bars";
+});
+
+document.querySelectorAll(".nav-links a").forEach((link) => {
+    link.addEventListener("click", () => {
+        navbar?.classList.remove("nav-open");
+        mobileMenuToggle?.setAttribute("aria-expanded", "false");
+        const icon = mobileMenuToggle?.querySelector("i");
+        if (icon) icon.className = "fas fa-bars";
+    });
+});
+
 function copyInstall() {
     const text = document.getElementById("install-command")?.innerText || "pip install pyclef";
     navigator.clipboard.writeText(text).then(() => {
@@ -314,6 +337,20 @@ function copyInstall() {
         }, 1600);
     });
 }
+
+document.querySelectorAll(".copy-code-btn").forEach((button) => {
+    button.addEventListener("click", () => {
+        const code = button.closest(".code-copy-wrap")?.querySelector("code")?.innerText;
+        if (!code) return;
+        navigator.clipboard.writeText(code).then(() => {
+            const original = content[currentLang]["copy-code"];
+            button.innerText = content[currentLang]["copied-code"];
+            setTimeout(() => {
+                button.innerText = original;
+            }, 1400);
+        });
+    });
+});
 
 const modal = document.getElementById("imageModal");
 const modalImg = document.getElementById("modalImg");
