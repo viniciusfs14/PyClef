@@ -292,7 +292,7 @@ html:lang(pt) .hero-copy h1 { font-size: clamp(2.85rem, 5.6vw, 5.25rem); max-wid
 .hero-visual { display: grid; place-items: center; gap: 28px; }
 .hero-logo { width: min(320px, 100%); filter: drop-shadow(0 24px 50px rgba(0,0,0,0.25)); }
 .metric-strip { width: 100%; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-.metric-strip div, .glass-card, .process-card, .showcase-card, .doc-card, .timeline-card, .citation-box, .guide-card, .midi-feature-list article, .flow-step-card {
+.metric-strip div, .glass-card, .process-card, .showcase-card, .doc-card, .timeline-card, .citation-box, .guide-card, .midi-feature-list article, .flow-step-card, .output-card, .output-feature-strip article {
     border: 1px solid var(--border);
     background: var(--card-bg);
     backdrop-filter: blur(24px);
@@ -309,19 +309,21 @@ html:lang(pt) .hero-copy h1 { font-size: clamp(2.85rem, 5.6vw, 5.25rem); max-wid
 :root[data-theme="light"] .citation-box,
 :root[data-theme="light"] .guide-card,
 :root[data-theme="light"] .midi-feature-list article,
-:root[data-theme="light"] .flow-step-card {
+:root[data-theme="light"] .flow-step-card,
+:root[data-theme="light"] .output-card,
+:root[data-theme="light"] .output-feature-strip article {
     background: linear-gradient(145deg, rgba(255,255,255,0.72), rgba(233,249,255,0.46));
     box-shadow:
         0 24px 70px rgba(0, 72, 128, 0.14),
         inset 0 1px 0 rgba(255,255,255,0.72);
 }
 .metric-strip div { border-radius: 22px; padding: 18px 14px; text-align: center; }
-.metric-strip div:hover, .glass-card:hover, .process-card:hover, .doc-card:hover, .timeline-card:hover, .guide-card:hover, .flow-step-card:hover {
+.metric-strip div:hover, .glass-card:hover, .process-card:hover, .doc-card:hover, .timeline-card:hover, .guide-card:hover, .flow-step-card:hover, .output-card:hover {
     border-color: rgba(64, 214, 255, 0.34);
     transform: translateY(-3px);
     box-shadow: 0 0 30px rgba(64, 214, 255, 0.14), 0 28px 90px var(--shadow), inset 0 1px 0 rgba(255,255,255,0.10);
 }
-.metric-strip div, .glass-card, .process-card, .doc-card, .timeline-card, .guide-card, .flow-step-card { transition: transform 0.24s ease, border-color 0.24s ease, box-shadow 0.24s ease; }
+.metric-strip div, .glass-card, .process-card, .doc-card, .timeline-card, .guide-card, .flow-step-card, .output-card { transition: transform 0.24s ease, border-color 0.24s ease, box-shadow 0.24s ease; }
 .metric-strip strong { display: block; color: var(--accent); font-size: 1.55rem; }
 .metric-strip span { color: var(--muted); font-size: 0.82rem; overflow-wrap: anywhere; }
 
@@ -510,6 +512,129 @@ html:lang(pt) .hero-copy h1 { font-size: clamp(2.85rem, 5.6vw, 5.25rem); max-wid
 .flow-step-card p {
     color: var(--muted);
     line-height: 1.7;
+}
+
+.outputs-section {
+    margin-top: 92px;
+}
+
+.output-heading {
+    margin-top: 0;
+}
+
+.outputs-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 18px;
+    margin-top: 26px;
+}
+
+.output-card {
+    grid-column: span 2;
+    overflow: hidden;
+    border-radius: 30px;
+}
+
+.output-card-large {
+    grid-column: span 3;
+}
+
+.output-card-midi {
+    grid-column: span 4;
+}
+
+.output-card img {
+    width: 100%;
+    aspect-ratio: 16 / 7;
+    object-fit: cover;
+    object-position: center;
+    border-radius: 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.output-card-midi img {
+    aspect-ratio: 16 / 9;
+}
+
+.output-card > div:not(.audio-visual) {
+    padding: 24px;
+}
+
+.output-badge {
+    display: inline-flex;
+    align-items: center;
+    min-height: 30px;
+    padding: 0 11px;
+    margin-bottom: 12px;
+    border: 1px solid rgba(64, 214, 255, 0.26);
+    border-radius: 999px;
+    color: var(--accent);
+    background: rgba(64, 214, 255, 0.08);
+    font-size: 0.78rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.output-card h3 {
+    margin-bottom: 10px;
+    font-size: 1.35rem;
+}
+
+.output-card p,
+.output-feature-strip p {
+    color: var(--muted);
+    line-height: 1.72;
+}
+
+.audio-visual {
+    min-height: 170px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    border-bottom: 1px solid var(--border);
+    background:
+        radial-gradient(circle at 24% 18%, rgba(64, 214, 255, 0.22), transparent 34%),
+        radial-gradient(circle at 78% 78%, rgba(108, 255, 136, 0.16), transparent 28%),
+        rgba(8, 13, 24, 0.44);
+}
+
+.audio-visual span {
+    width: 12px;
+    border-radius: 999px;
+    background: linear-gradient(180deg, var(--accent-2), var(--accent));
+    box-shadow: 0 0 22px rgba(64, 214, 255, 0.35);
+}
+
+.audio-visual span:nth-child(1) { height: 48px; }
+.audio-visual span:nth-child(2) { height: 94px; }
+.audio-visual span:nth-child(3) { height: 132px; }
+.audio-visual span:nth-child(4) { height: 76px; }
+.audio-visual span:nth-child(5) { height: 112px; }
+.audio-visual span:nth-child(6) { height: 58px; }
+
+.output-feature-strip {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-top: 18px;
+}
+
+.output-feature-strip article {
+    padding: 22px;
+    border-radius: 24px;
+}
+
+.output-feature-strip i {
+    margin-bottom: 12px;
+    color: var(--accent);
+    font-size: 1.35rem;
+}
+
+.output-feature-strip h3 {
+    margin-bottom: 8px;
+    font-size: 1.05rem;
 }
 
 .midi-doc-section {
@@ -702,7 +827,11 @@ html:lang(pt) .hero-copy h1 { font-size: clamp(2.85rem, 5.6vw, 5.25rem); max-wid
     }
     .hero-section, .showcase-section { grid-template-columns: 1fr; }
     .hero-logo { width: min(300px, 70vw); }
-    .section-grid, .process-grid, .doc-grid, .method-grid, .guide-grid, .midi-doc-section { grid-template-columns: 1fr; }
+    .section-grid, .process-grid, .doc-grid, .method-grid, .guide-grid, .midi-doc-section, .output-feature-strip { grid-template-columns: 1fr; }
+    .outputs-grid { grid-template-columns: 1fr 1fr; }
+    .output-card,
+    .output-card-large,
+    .output-card-midi { grid-column: span 1; }
     .span-2 { grid-column: span 2; }
     .cta-section { align-items: center; flex-direction: column; text-align: center; }
     .cta-actions { justify-content: center; width: 100%; }
@@ -711,16 +840,50 @@ html:lang(pt) .hero-copy h1 { font-size: clamp(2.85rem, 5.6vw, 5.25rem); max-wid
 @media (max-width: 640px) {
     .container { width: min(100% - 28px, 1180px); }
     .navbar { top: 10px; width: calc(100% - 20px); border-radius: 22px; }
-    .nav-content { padding: 0 12px; gap: 10px; }
-    .nav-content { padding: 12px; }
+    .nav-content { padding: 10px; gap: 6px; flex-wrap: wrap; }
     .nav-brand span, .btn-github span { display: none; }
-    .nav-actions { flex-wrap: wrap; }
+    .nav-logo { width: 34px; height: 34px; }
+    .nav-actions {
+        order: 2;
+        flex: 0 0 auto;
+        flex-basis: auto;
+        margin-left: auto;
+        justify-content: flex-end;
+        flex-wrap: nowrap;
+        gap: 6px;
+    }
+    .mobile-menu-toggle {
+        order: 3;
+        width: 42px;
+        height: 42px;
+        margin-left: 0;
+        border-radius: 15px;
+    }
+    #lang-switch {
+        min-height: 42px;
+        padding: 0 9px;
+        gap: 5px;
+        border-radius: 15px;
+    }
+    .flag-img { width: 18px; height: 12px; }
+    .icon-btn,
+    .btn-github {
+        width: 42px;
+        height: 42px;
+        padding: 0;
+        border-radius: 15px;
+    }
+    .nav-links {
+        order: 4;
+        padding-top: 8px;
+    }
     .hero-section, .page-hero { padding: 34px 22px; border-radius: 30px; }
     .hero-copy h1, .page-hero h1, html:lang(pt) .hero-copy h1 { font-size: clamp(2.35rem, 12vw, 2.75rem); }
     .hero-actions, .cta-actions { flex-direction: column; align-items: center; }
     .btn-primary, .btn-secondary { width: min(100%, 280px); }
     .install-line { width: min(100%, 320px); justify-content: center; margin-left: auto; margin-right: auto; }
     .metric-strip, .section-grid, .process-grid, .doc-grid, .method-grid, .guide-grid { grid-template-columns: 1fr; }
+    .outputs-grid { grid-template-columns: 1fr; }
     .span-2 { grid-column: span 1; }
     .glass-card, .process-card, .doc-card, .timeline-card, .citation-box, .midi-doc-section { padding: 24px; border-radius: 24px; }
     .timeline-card { grid-template-columns: 1fr; }

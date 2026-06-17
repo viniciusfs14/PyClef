@@ -145,39 +145,78 @@ Pyclef()</code></pre>
             </div>
         </section>
 
-        <section class="midi-doc-section">
-            <div class="midi-copy">
-                <p class="eyebrow" data-i18n="midi-kicker">MIDI Player</p>
-                <h2 data-i18n="midi-title">Review generated MIDI files with a piano-roll view.</h2>
-                <p data-i18n="midi-lead">PyClef now includes a dedicated MIDI player window. It loads the generated MIDI, applies the piano SoundFont automatically and shows note timing with a waterfall view and responsive keyboard.</p>
-                <div class="midi-feature-list">
-                    <article>
-                        <i class="fas fa-wave-square"></i>
-                        <h3 data-i18n="midi-card-1-title">Waterfall playback</h3>
-                        <p data-i18n="midi-card-1-text">Notes fall toward the keyboard in sync with playback, making timing problems easier to inspect.</p>
-                    </article>
-                    <article>
-                        <i class="fas fa-keyboard"></i>
-                        <h3 data-i18n="midi-card-2-title">Dynamic keyboard</h3>
-                        <p data-i18n="midi-card-2-text">The piano range adapts to the MIDI file and labels white keys with note names.</p>
-                    </article>
-                    <article>
-                        <i class="fas fa-palette"></i>
-                        <h3 data-i18n="midi-card-3-title">Hand-aware colors</h3>
-                        <p data-i18n="midi-card-3-text">Right-hand and left-hand notes use different colors, including darker tones for black-key notes.</p>
-                    </article>
-                </div>
+        <section class="outputs-section">
+            <div class="section-heading output-heading">
+                <p class="eyebrow" data-i18n="outputs-kicker">Generated outputs</p>
+                <h2 data-i18n="outputs-title">Inspect the score as image, sound, MIDI and video.</h2>
+                <p data-i18n="outputs-lead">PyClef keeps the outputs separate so each result can be reviewed with the right level of detail.</p>
             </div>
-            <div class="midi-showcase">
-                <img src="imgs/midi-player-preview.gif" alt="Animated PyClef MIDI Player waterfall playback" class="zoomable-img" onclick="openModal(this)">
-                <div class="midi-caption">
-                    <span data-i18n="midi-shot-label">Playback view</span>
-                    <p data-i18n="midi-shot-text">Use the player to inspect MIDI timing before sharing or exporting the final result.</p>
-                </div>
-                <figure class="midi-secondary-shot">
-                    <img src="imgs/guide-07-midi-player.png" alt="PyClef MIDI Player loaded and ready" class="zoomable-img" onclick="openModal(this)">
-                    <figcaption data-i18n="midi-secondary-caption">Loaded MIDI with piano range and metadata.</figcaption>
-                </figure>
+
+            <div class="outputs-grid">
+                <article class="output-card output-card-large">
+                    <img src="imgs/output-annotation-clean.jpg" alt="Clean PyClef annotation crop focused on musical staves" class="zoomable-img" onclick="openModal(this)">
+                    <div>
+                        <span class="output-badge" data-i18n="output-clean-badge">Annotated score</span>
+                        <h3 data-i18n="output-clean-title">Clean view</h3>
+                        <p data-i18n="output-clean-text">A compact notation overlay for quick visual inspection of pitch names and staff grouping.</p>
+                    </div>
+                </article>
+
+                <article class="output-card output-card-large">
+                    <img src="imgs/output-annotation-detailed.jpg" alt="Detailed PyClef annotation crop focused on labeled notes" class="zoomable-img" onclick="openModal(this)">
+                    <div>
+                        <span class="output-badge" data-i18n="output-detailed-badge">Annotation detail</span>
+                        <h3 data-i18n="output-detailed-title">Detailed zoom</h3>
+                        <p data-i18n="output-detailed-text">A closer crop helps evaluate dense passages, stacked notes and label placement.</p>
+                    </div>
+                </article>
+
+                <article class="output-card">
+                    <div class="audio-visual" aria-hidden="true">
+                        <span></span><span></span><span></span><span></span><span></span><span></span>
+                    </div>
+                    <div>
+                        <span class="output-badge">MP3</span>
+                        <h3 data-i18n="output-audio-title">Rendered audio</h3>
+                        <p data-i18n="output-audio-text">Generate an audio file for listening checks, sharing and quick musical review.</p>
+                    </div>
+                </article>
+
+                <article class="output-card">
+                    <img src="imgs/output-video-frame.jpg" alt="Synchronized PyClef video crop focused on musical staves" class="zoomable-img" onclick="openModal(this)">
+                    <div>
+                        <span class="output-badge">MP4</span>
+                        <h3 data-i18n="output-video-title">Synchronized video</h3>
+                        <p data-i18n="output-video-text">Use the video preview to follow playback and inspect how the reconstruction moves through the score.</p>
+                    </div>
+                </article>
+
+                <article class="output-card output-card-midi">
+                    <img src="imgs/midi-player-preview.gif" alt="Animated PyClef MIDI Player waterfall playback" class="zoomable-img" onclick="openModal(this)">
+                    <div>
+                        <span class="output-badge" data-i18n="midi-kicker">MIDI Player</span>
+                        <h3 data-i18n="midi-title">Review generated MIDI files with a piano-roll view.</h3>
+                        <p data-i18n="midi-lead">PyClef loads the generated MIDI, applies the piano SoundFont automatically and shows timing with a waterfall view and responsive keyboard.</p>
+                    </div>
+                </article>
+            </div>
+
+            <div class="output-feature-strip">
+                <article>
+                    <i class="fas fa-wave-square"></i>
+                    <h3 data-i18n="midi-card-1-title">Waterfall playback</h3>
+                    <p data-i18n="midi-card-1-text">Notes fall toward the keyboard in sync with playback, making timing problems easier to inspect.</p>
+                </article>
+                <article>
+                    <i class="fas fa-keyboard"></i>
+                    <h3 data-i18n="midi-card-2-title">Dynamic keyboard</h3>
+                    <p data-i18n="midi-card-2-text">The piano range adapts to the MIDI file and labels white keys with note names.</p>
+                </article>
+                <article>
+                    <i class="fas fa-palette"></i>
+                    <h3 data-i18n="midi-card-3-title">Hand-aware colors</h3>
+                    <p data-i18n="midi-card-3-text">Right-hand and left-hand notes use different colors, including darker tones for black-key notes.</p>
+                </article>
             </div>
         </section>
 
