@@ -524,19 +524,22 @@ html:lang(pt) .hero-copy h1 { font-size: clamp(2.85rem, 5.6vw, 5.25rem); max-wid
 
 .outputs-grid {
     display: grid;
-    grid-template-columns: repeat(6, 1fr);
+    grid-template-columns: repeat(12, minmax(0, 1fr));
     gap: 18px;
     margin-top: 26px;
+    align-items: stretch;
 }
 
 .output-card {
-    grid-column: span 2;
+    grid-column: span 4;
+    display: flex;
+    flex-direction: column;
     overflow: hidden;
     border-radius: 30px;
 }
 
 .output-card-large {
-    grid-column: span 3;
+    grid-column: span 6;
 }
 
 .output-card-midi {
@@ -556,7 +559,12 @@ html:lang(pt) .hero-copy h1 { font-size: clamp(2.85rem, 5.6vw, 5.25rem); max-wid
     aspect-ratio: 16 / 9;
 }
 
+.output-card-video img {
+    aspect-ratio: 16 / 9;
+}
+
 .output-card > div:not(.audio-visual) {
+    flex: 1;
     padding: 24px;
 }
 
@@ -844,19 +852,25 @@ html:lang(pt) .hero-copy h1 { font-size: clamp(2.85rem, 5.6vw, 5.25rem); max-wid
     .nav-brand span, .btn-github span { display: none; }
     .nav-logo { width: 34px; height: 34px; }
     .nav-actions {
-        order: 2;
-        flex: 0 0 auto;
-        flex-basis: auto;
-        margin-left: auto;
-        justify-content: flex-end;
+        order: 5;
+        display: none;
+        width: 100%;
+        flex: 0 0 100%;
+        flex-basis: 100%;
+        margin-left: 0;
+        justify-content: center;
         flex-wrap: nowrap;
         gap: 6px;
+        padding-top: 4px;
+    }
+    .navbar.nav-open .nav-actions {
+        display: flex;
     }
     .mobile-menu-toggle {
-        order: 3;
+        order: 2;
         width: 42px;
         height: 42px;
-        margin-left: 0;
+        margin-left: auto;
         border-radius: 15px;
     }
     #lang-switch {
