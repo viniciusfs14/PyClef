@@ -13,10 +13,15 @@
 </p>
 
 <p align="center">
-  <a href="https://pypi.org/project/pyclef/"><img alt="PyPI" src="https://img.shields.io/pypi/v/pyclef?color=40d6ff&label=PyPI"></a>
+  <a href="https://pypi.org/project/pyclef/">
+    <img alt="PyPI" src="https://img.shields.io/pypi/v/pyclef?color=40d6ff&label=PyPI">
+  </a>
   <img alt="Python" src="https://img.shields.io/badge/python-3.10%2B-40d6ff">
   <img alt="Platform" src="https://img.shields.io/badge/platform-Windows-40d6ff">
   <img alt="Status" src="https://img.shields.io/badge/status-alpha-101827">
+  <a href="https://pypi.org/project/pyclef/">
+    <img alt="Downloads" src="https://img.shields.io/pypi/dm/pyclef?color=40d6ff">
+  </a>
 </p>
 
 <p align="center">
