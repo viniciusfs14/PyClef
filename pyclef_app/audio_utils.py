@@ -14,12 +14,15 @@ def get_frequency(note_base, accidental, octave):
     semitones = {'C': 0, 'D': 2, 'E': 4, 'F': 5, 'G': 7, 'A': 9, 'B': 11}
     n = semitones[note_base]
     if accidental == 's': n += 1
+    elif accidental == 'ss': n += 2
     elif accidental == 'b': n -= 1
+    elif accidental == 'bb': n -= 2
     return 16.3516 * (2 ** (octave + n/12))
 
 def note_to_midi(note_base, accidental, octave):
     semitones = {'C': 0, 'D': 2, 'E': 4, 'F': 5, 'G': 7, 'A': 9, 'B': 11}
-    return 12 + (octave * 12) + semitones[note_base] + (1 if accidental == 's' else -1 if accidental == 'b' else 0)
+    accidental_offset = {'s': 1, 'ss': 2, 'b': -1, 'bb': -2}.get(accidental, 0)
+    return 12 + (octave * 12) + semitones[note_base] + accidental_offset
 
 
 @dataclass(frozen=True)

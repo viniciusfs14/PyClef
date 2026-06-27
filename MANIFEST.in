@@ -1,6 +1,6 @@
 include README.md
 include pyclef.py
-recursive-include pyclef_app/ui *.png *.ui *.qrc
+recursive-include pyclef_app/ui *.png *.svg *.ui *.qrc
 include pyclef_app/model/README.md
 exclude pyclef_app/model/*.pt
 global-exclude __pycache__/*

@@ -7,6 +7,9 @@ const MAX_WHITE_WIDTH = 84;
 const MIN_BLACK_WIDTH = 10;
 const MAX_BLACK_WIDTH = 46;
 const PIXELS_PER_SECOND = 135;
+const MAX_RENDERED_NOTES = 6000;
+const VISIBILITY_PADDING_SECONDS = 0.35;
+const TIME_LABEL_INTERVAL_MS = 90;
 
 const state = {
     midiBuffer: null,
@@ -21,10 +24,14 @@ const state = {
     animationFrame: null,
     keyElements: new Map(),
     noteElements: [],
+    visibleNoteIndices: new Set(),
+    activeKeyMidis: new Map(),
     minMidi: 48,
     maxMidi: 84,
     whiteLefts: new Map(),
     pendingPlay: null,
+    maxNoteDuration: 0,
+    lastTimeLabelAt: 0,
 };
 
 const els = {
@@ -216,25 +223,66 @@ function keyLeft(midi) {
     return state.whiteLefts.get(midi) ?? 0;
 }
 
+function lowerBoundNoteStart(target) {
+    let low = 0;
+    let high = state.noteElements.length;
+    while (low < high) {
+        const middle = (low + high) >> 1;
+        if (state.noteElements[middle].note.time < target) {
+            low = middle + 1;
+        } else {
+            high = middle;
+        }
+    }
+    return low;
+}
+
+function upperBoundNoteStart(target) {
+    let low = 0;
+    let high = state.noteElements.length;
+    while (low < high) {
+        const middle = (low + high) >> 1;
+        if (state.noteElements[middle].note.time <= target) {
+            low = middle + 1;
+        } else {
+            high = middle;
+        }
+    }
+    return low;
+}
+
 function renderNotes() {
     els.noteLayer.innerHTML = "";
     state.noteElements = [];
+    state.visibleNoteIndices.clear();
+    state.maxNoteDuration = 0;
     if (!state.summary?.notes?.length) {
         els.emptyState.style.display = "grid";
         return;
     }
 
     els.emptyState.style.display = "none";
-    state.summary.notes.slice(0, 1800).forEach((note) => {
+    const fragment = document.createDocumentFragment();
+    state.summary.notes.slice(0, MAX_RENDERED_NOTES).forEach((note, index) => {
+        const noteHeight = Math.max(14, note.duration * PIXELS_PER_SECOND);
+        state.maxNoteDuration = Math.max(state.maxNoteDuration, note.duration);
         const noteEl = document.createElement("span");
         noteEl.className = `fall-note ${note.hand} ${isBlack(note.midi) ? "black" : "white"}`;
         noteEl.style.left = `${keyLeft(note.midi)}px`;
         noteEl.style.width = `${isBlack(note.midi) ? state.blackWidth : state.whiteWidth}px`;
-        noteEl.style.height = `${Math.max(14, note.duration * PIXELS_PER_SECOND)}px`;
+        noteEl.style.height = `${noteHeight}px`;
+        noteEl.style.transform = "translate3d(0, -9999px, 0)";
         noteEl.title = note.name || midiName(note.midi);
-        els.noteLayer.appendChild(noteEl);
-        state.noteElements.push({ element: noteEl, note });
+        fragment.appendChild(noteEl);
+        state.noteElements.push({
+            element: noteEl,
+            note,
+            index,
+            height: noteHeight,
+            endTime: note.time + note.duration,
+        });
     });
+    els.noteLayer.appendChild(fragment);
 }
 
 function refreshLayout() {
@@ -246,14 +294,48 @@ function refreshLayout() {
 }
 
 function resetVisuals() {
+    state.activeKeyMidis.forEach((_, midi) => {
+        const key = state.keyElements.get(midi);
+        if (key) {
+            key.classList.remove("active-left", "active-right");
+        }
+    });
+    state.activeKeyMidis.clear();
     state.keyElements.forEach((key) => {
         key.classList.remove("active-left", "active-right");
     });
-    state.noteElements.forEach(({ element }) => {
-        element.style.opacity = "0";
+    state.visibleNoteIndices.forEach((index) => {
+        const record = state.noteElements[index];
+        if (record) {
+            record.element.style.opacity = "0";
+            record.element.style.transform = "translate3d(0, -9999px, 0)";
+        }
     });
-    els.progressFill.style.width = "0%";
+    state.visibleNoteIndices.clear();
+    els.progressFill.style.transform = "scaleX(0)";
     els.timeLabel.textContent = `0:00 / ${formatTime(state.summary?.duration || 0)}`;
+    state.lastTimeLabelAt = 0;
+}
+
+function applyActiveKeys(nextActiveKeyMidis) {
+    state.activeKeyMidis.forEach((hand, midi) => {
+        if (nextActiveKeyMidis.get(midi) === hand) return;
+        const key = state.keyElements.get(midi);
+        if (key) {
+            key.classList.remove("active-left", "active-right");
+        }
+    });
+
+    nextActiveKeyMidis.forEach((hand, midi) => {
+        if (state.activeKeyMidis.get(midi) === hand) return;
+        const key = state.keyElements.get(midi);
+        if (key) {
+            key.classList.remove("active-left", "active-right");
+            key.classList.add(hand === "left" ? "active-left" : "active-right");
+        }
+    });
+
+    state.activeKeyMidis = nextActiveKeyMidis;
 }
 
 function updateVisuals() {
@@ -261,29 +343,51 @@ function updateVisuals() {
     const duration = state.summary?.duration || 0;
     const height = els.waterfall.clientHeight || 360;
     const lineY = height - 8;
+    const leadSeconds = (height / PIXELS_PER_SECOND) + VISIBILITY_PADDING_SECONDS;
+    const startIndex = lowerBoundNoteStart(time - state.maxNoteDuration - VISIBILITY_PADDING_SECONDS);
+    const endIndex = upperBoundNoteStart(time + leadSeconds);
+    const nextVisible = new Set();
+    const nextActiveKeys = new Map();
 
-    state.keyElements.forEach((key) => {
-        key.classList.remove("active-left", "active-right");
-    });
+    for (let index = startIndex; index < endIndex; index += 1) {
+        const record = state.noteElements[index];
+        if (!record) continue;
 
-    state.noteElements.forEach(({ element, note }) => {
-        const noteHeight = Math.max(14, note.duration * PIXELS_PER_SECOND);
-        const y = lineY - (note.time - time) * PIXELS_PER_SECOND - noteHeight;
-        const visible = y > -noteHeight - 24 && y < height + 40;
-        element.style.transform = `translateY(${Math.round(y)}px)`;
-        element.style.opacity = visible ? "1" : "0";
+        const { element, note } = record;
+        if (record.endTime < time - VISIBILITY_PADDING_SECONDS) continue;
 
+        const y = lineY - (note.time - time) * PIXELS_PER_SECOND - record.height;
+        const visible = y > -record.height - 32 && y < height + 52;
+        if (!visible) continue;
+
+        nextVisible.add(index);
+        element.style.transform = `translate3d(0, ${y.toFixed(2)}px, 0)`;
+        if (!state.visibleNoteIndices.has(index)) {
+            element.style.opacity = "1";
+        }
         if (time >= note.time && time <= note.time + note.duration + 0.04) {
-            const key = state.keyElements.get(note.midi);
-            if (key) {
-                key.classList.add(note.hand === "left" ? "active-left" : "active-right");
-            }
+            nextActiveKeys.set(note.midi, note.hand);
+        }
+    }
+
+    state.visibleNoteIndices.forEach((index) => {
+        if (nextVisible.has(index)) return;
+        const record = state.noteElements[index];
+        if (record) {
+            record.element.style.opacity = "0";
         }
     });
+    state.visibleNoteIndices = nextVisible;
+    applyActiveKeys(nextActiveKeys);
 
     const pct = duration ? Math.min(100, (time / duration) * 100) : 0;
-    els.progressFill.style.width = `${pct}%`;
-    els.timeLabel.textContent = `${formatTime(time)} / ${formatTime(duration)}`;
+    els.progressFill.style.transform = `scaleX(${pct / 100})`;
+
+    const now = performance.now();
+    if (!state.lastTimeLabelAt || now - state.lastTimeLabelAt >= TIME_LABEL_INTERVAL_MS || !state.isPlaying) {
+        els.timeLabel.textContent = `${formatTime(time)} / ${formatTime(duration)}`;
+        state.lastTimeLabelAt = now;
+    }
 
     if (state.isPlaying) {
         state.animationFrame = requestAnimationFrame(updateVisuals);

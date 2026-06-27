@@ -1,0 +1,44 @@
+{
+  "recognition": {
+    "review": {
+      "event_count": 0,
+      "page_count": 1,
+      "duration_seconds": 0,
+      "average_confidence": null,
+      "low_confidence_count": 0,
+      "review_confidence_count": 0,
+      "high_confidence_count": 0,
+      "left_hand_count": 0,
+      "right_hand_count": 0,
+      "accidental_count": 0,
+      "invalid_duration_count": 0,
+      "key_signature_count": 0
+    },
+    "confidence_histogram": {
+      "low": 0,
+      "review": 0,
+      "high": 0
+    }
+  },
+  "musical_interpretation": {
+    "pitch_range": {
+      "min_midi": null,
+      "max_midi": null,
+      "span_semitones": 0
+    },
+    "pitch_class_counts": {},
+    "hand_distribution": {},
+    "accidental_distribution": {},
+    "duration_profile": {},
+    "key_signatures": []
+  },
+  "timing_interpretation": {
+    "column_count": 0,
+    "max_polyphony": 0,
+    "dense_moment_count": 0,
+    "average_gap_ms": 0,
+    "min_gap_ms": 0,
+    "max_gap_ms": 0
+  },
+  "validation_ok": true
+}
