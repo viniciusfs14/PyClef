@@ -1,8 +1,19 @@
 import os
+import sys
 from pathlib import Path
 
 
 BASE_DIR = Path(__file__).resolve().parent
+
+
+def _runtime_root():
+    if getattr(sys, "frozen", False):
+        return Path(sys.executable).resolve().parent
+    return BASE_DIR.parent
+
+
+APP_ROOT = _runtime_root()
+TOOLS_DIR = Path(os.environ.get("PYCLEF_TOOLS_DIR", APP_ROOT / "tools"))
 
 
 def _env_int(name, default):
@@ -12,7 +23,58 @@ def _env_int(name, default):
         return default
 
 
-PACKAGE_MODEL = BASE_DIR / "model" / "best.pt"
+def _first_existing_file(paths):
+    for path in paths:
+        candidate = Path(path)
+        if candidate.exists() and candidate.is_file():
+            return candidate
+    return None
+
+
+def _first_existing_dir(paths):
+    for path in paths:
+        candidate = Path(path)
+        if candidate.exists() and candidate.is_dir():
+            return candidate
+    return None
+
+
+def _executable_name(name):
+    return f"{name}.exe" if os.name == "nt" else name
+
+
+def _resolve_bundled_tool(env_name, executable_name, fallback):
+    configured = os.environ.get(env_name)
+    if configured:
+        return configured
+
+    candidates = [
+        TOOLS_DIR / "ffmpeg" / "bin" / executable_name,
+        TOOLS_DIR / "fluidsynth" / "bin" / executable_name,
+        APP_ROOT / "ffmpeg" / "bin" / executable_name,
+        APP_ROOT / "fluidsynth" / "bin" / executable_name,
+        APP_ROOT / executable_name,
+    ]
+    match = _first_existing_file(candidates)
+    return str(match) if match else fallback
+
+
+def _prepend_tool_dir(tool_path):
+    candidate = Path(str(tool_path))
+    if not candidate.exists() or not candidate.is_file():
+        return
+    directory = str(candidate.parent)
+    path_parts = os.environ.get("PATH", "").split(os.pathsep)
+    if directory not in path_parts:
+        os.environ["PATH"] = directory + os.pathsep + os.environ.get("PATH", "")
+
+
+BUNDLED_MODEL = _first_existing_file([
+    BASE_DIR / "model" / "best.pt",
+    TOOLS_DIR / "model" / "best.pt",
+    APP_ROOT / "model" / "best.pt",
+])
+PACKAGE_MODEL = BUNDLED_MODEL or BASE_DIR / "model" / "best.pt"
 MODEL_CACHE_DIR = Path(os.environ.get("PYCLEF_MODEL_DIR", Path.home() / ".pyclef" / "models"))
 MODEL_URL = os.environ.get(
     "PYCLEF_MODEL_URL",
@@ -24,6 +86,11 @@ YOLO_MODEL = Path(os.environ["PYCLEF_MODEL_PATH"]) if os.environ.get("PYCLEF_MOD
 SOUNDFONT_CACHE_DIR = Path(
     os.environ.get("PYCLEF_SOUNDFONT_DIR", Path.home() / ".pyclef" / "soundfonts")
 )
+BUNDLED_SOUNDFONT = _first_existing_file([
+    BASE_DIR / "soundfonts" / "GeneralUser-GS.sf2",
+    TOOLS_DIR / "soundfonts" / "GeneralUser-GS.sf2",
+    APP_ROOT / "soundfonts" / "GeneralUser-GS.sf2",
+])
 SOUNDFONT_URL = os.environ.get(
     "PYCLEF_SOUNDFONT_URL",
     "https://raw.githubusercontent.com/mrbumpy409/GeneralUser-GS/main/GeneralUser-GS.sf2",
@@ -31,11 +98,26 @@ SOUNDFONT_URL = os.environ.get(
 SOUNDFONT_PATH = (
     Path(os.environ["PYCLEF_SOUNDFONT_PATH"])
     if os.environ.get("PYCLEF_SOUNDFONT_PATH")
-    else SOUNDFONT_CACHE_DIR / "GeneralUser-GS.sf2"
+    else BUNDLED_SOUNDFONT or SOUNDFONT_CACHE_DIR / "GeneralUser-GS.sf2"
 )
-FLUIDSYNTH_PATH = os.environ.get("PYCLEF_FLUIDSYNTH_PATH", "fluidsynth")
+FFMPEG_PATH = _resolve_bundled_tool("PYCLEF_FFMPEG_PATH", _executable_name("ffmpeg"), "ffmpeg")
+FFPROBE_PATH = _resolve_bundled_tool("PYCLEF_FFPROBE_PATH", _executable_name("ffprobe"), "ffprobe")
+FLUIDSYNTH_PATH = _resolve_bundled_tool("PYCLEF_FLUIDSYNTH_PATH", _executable_name("fluidsynth"), "fluidsynth")
+for _tool_path in (FFMPEG_PATH, FFPROBE_PATH, FLUIDSYNTH_PATH):
+    _prepend_tool_dir(_tool_path)
+if Path(str(FFMPEG_PATH)).exists():
+    os.environ.setdefault("IMAGEIO_FFMPEG_EXE", str(FFMPEG_PATH))
 OUTPUT_BASE_NAME = "vinicin"
-POPPLER_PATH = r'C:\poppler\Library\bin' 
+POPPLER_PATH = os.environ.get("PYCLEF_POPPLER_PATH") or str(
+    _first_existing_dir([
+        TOOLS_DIR / "poppler" / "bin",
+        TOOLS_DIR / "poppler" / "Library" / "bin",
+        APP_ROOT / "poppler" / "bin",
+        APP_ROOT / "poppler" / "Library" / "bin",
+        Path(r"C:\poppler\Library\bin"),
+    ])
+    or Path(r"C:\poppler\Library\bin")
+)
 
 FPS = max(24, _env_int("PYCLEF_VIDEO_FPS", 60))
 SAMPLE_RATE = 44100 

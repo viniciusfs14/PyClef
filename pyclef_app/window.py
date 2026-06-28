@@ -135,7 +135,9 @@ TRANSLATIONS = {
         "help_sound_title": "Sound",
         "help_sound_body": "Chooses the instrument used for MP3 and video rendering. SoundFont piano is usually the most realistic option.",
         "help_video_mode_title": "Video style",
-        "help_video_mode_body": "Score video follows the annotated sheet. Piano roll creates a falling-notes visualization with a piano.",
+        "help_video_mode_body": "Score video follows the sheet, Piano roll focuses on falling notes, and Score + piano roll adds the sheet preview but takes longer to render.",
+        "help_video_resolution_title": "Video resolution",
+        "help_video_resolution_body": "720p is faster and good for previews. 1080p keeps more detail for final sharing.",
         "help_preprocess_title": "Image cleanup",
         "help_preprocess_body": "Improves contrast and reduces small scan noise before recognition. The original page is still used for annotations and video.",
         "help_quality_gate_title": "Quality gate",
@@ -175,6 +177,10 @@ TRANSLATIONS = {
         "video_mode": "Video style",
         "video_mode_score": "Score video",
         "video_mode_piano_roll": "Piano roll",
+        "video_mode_showcase": "Score + piano roll",
+        "video_resolution": "Resolution",
+        "video_resolution_720": "720p fast",
+        "video_resolution_1080": "1080p detailed",
         "preprocess": "Image cleanup",
         "quality_gate": "Quality gate",
         "staff_crop_recovery": "Staff crop recovery",
@@ -222,6 +228,8 @@ TRANSLATIONS = {
         "scientific_chart_hands": "Hand distribution",
         "scientific_chart_pitch": "Pitch classes",
         "scientific_chart_duration": "Duration profile",
+        "scientific_quality_overview": "Quality overview",
+        "scientific_action_items": "Recommended checks",
         "scientific_timing": "Timing interpretation",
         "scientific_crop_recovery": "Staff crop recovery",
         "scientific_key_signatures": "Key-signature context",
@@ -334,7 +342,9 @@ TRANSLATIONS = {
         "help_sound_title": "Som",
         "help_sound_body": "Escolhe o instrumento usado no MP3 e no vídeo. Piano SoundFont costuma ser a opção mais realista.",
         "help_video_mode_title": "Estilo do vídeo",
-        "help_video_mode_body": "Vídeo da partitura acompanha a folha anotada. Piano roll cria uma visualização de notas caindo com piano.",
+        "help_video_mode_body": "Video da partitura acompanha a folha, Piano roll foca nas notas caindo e Partitura + piano roll adiciona a previa da folha, mas demora mais para renderizar.",
+        "help_video_resolution_title": "Resolucao do video",
+        "help_video_resolution_body": "720p e mais rapido e bom para previa. 1080p mantem mais detalhe para compartilhamento final.",
         "help_preprocess_title": "Limpeza da imagem",
         "help_preprocess_body": "Melhora contraste e reduz pequenos ruídos da digitalização antes do reconhecimento. A página original continua sendo usada nas anotações e no vídeo.",
         "help_quality_gate_title": "Controle de qualidade",
@@ -374,6 +384,10 @@ TRANSLATIONS = {
         "video_mode": "Estilo do vídeo",
         "video_mode_score": "Vídeo da partitura",
         "video_mode_piano_roll": "Piano roll",
+        "video_mode_showcase": "Partitura + piano roll",
+        "video_resolution": "Resolucao",
+        "video_resolution_720": "720p rapido",
+        "video_resolution_1080": "1080p detalhado",
         "preprocess": "Limpeza da imagem",
         "quality_gate": "Controle de qualidade",
         "staff_crop_recovery": "Recuperação por recorte",
@@ -421,6 +435,8 @@ TRANSLATIONS = {
         "scientific_chart_hands": "Distribuição por mão",
         "scientific_chart_pitch": "Classes de notas",
         "scientific_chart_duration": "Perfil de duração",
+        "scientific_quality_overview": "Resumo de qualidade",
+        "scientific_action_items": "Verificações recomendadas",
         "scientific_timing": "Interpretação temporal",
         "scientific_crop_recovery": "Recuperação por recorte",
         "scientific_key_signatures": "Contexto de armadura",
@@ -1366,6 +1382,12 @@ class MainClef(QMainWindow, Ui_MainWindow):
         self.video_mode_combo = QComboBox()
         self.video_mode_combo.setObjectName("modeCombo")
         self.video_mode_combo.setCursor(Qt.PointingHandCursor)
+        self.video_resolution_label = QLabel()
+        self.video_resolution_label.setObjectName("fieldLabel")
+        self.video_resolution_info_button = self._make_info_button("help_video_resolution_title", "help_video_resolution_body")
+        self.video_resolution_combo = QComboBox()
+        self.video_resolution_combo.setObjectName("modeCombo")
+        self.video_resolution_combo.setCursor(Qt.PointingHandCursor)
         self.preprocess_checkbox = QCheckBox()
         self.preprocess_checkbox.setChecked(True)
         self.preprocess_checkbox.setCursor(Qt.PointingHandCursor)
@@ -1664,12 +1686,15 @@ class MainClef(QMainWindow, Ui_MainWindow):
             self.advanced_options_layout.addWidget(self.video_mode_label, 1, 0)
             self.advanced_options_layout.addWidget(self.video_mode_info_button, 1, 1)
             self.advanced_options_layout.addWidget(self.video_mode_combo, 1, 2)
-            self.advanced_options_layout.addWidget(self.preprocess_checkbox, 1, 3)
-            self.advanced_options_layout.addWidget(self.preprocess_info_button, 1, 4)
-            self.advanced_options_layout.addWidget(self.quality_gate_checkbox, 1, 5)
-            self.advanced_options_layout.addWidget(self.quality_gate_info_button, 1, 6)
-            self.advanced_options_layout.addWidget(self.staff_crop_recovery_checkbox, 2, 0)
-            self.advanced_options_layout.addWidget(self.staff_crop_recovery_info_button, 2, 1)
+            self.advanced_options_layout.addWidget(self.video_resolution_label, 1, 3)
+            self.advanced_options_layout.addWidget(self.video_resolution_info_button, 1, 4)
+            self.advanced_options_layout.addWidget(self.video_resolution_combo, 1, 5)
+            self.advanced_options_layout.addWidget(self.preprocess_checkbox, 2, 0)
+            self.advanced_options_layout.addWidget(self.preprocess_info_button, 2, 1)
+            self.advanced_options_layout.addWidget(self.quality_gate_checkbox, 2, 2)
+            self.advanced_options_layout.addWidget(self.quality_gate_info_button, 2, 3)
+            self.advanced_options_layout.addWidget(self.staff_crop_recovery_checkbox, 2, 4)
+            self.advanced_options_layout.addWidget(self.staff_crop_recovery_info_button, 2, 5)
             self.advanced_options_layout.addWidget(self.diagnostics_frame, 3, 0, 1, 7)
             self.advanced_options_layout.setColumnStretch(2, 1)
             self.advanced_options_layout.setColumnStretch(5, 1)
@@ -1718,13 +1743,16 @@ class MainClef(QMainWindow, Ui_MainWindow):
             self.advanced_options_layout.addWidget(self.video_mode_label, 2, 0)
             self.advanced_options_layout.addWidget(self.video_mode_info_button, 2, 1)
             self.advanced_options_layout.addWidget(self.video_mode_combo, 2, 2)
-            self.advanced_options_layout.addWidget(self.preprocess_checkbox, 3, 0)
-            self.advanced_options_layout.addWidget(self.preprocess_info_button, 3, 1)
-            self.advanced_options_layout.addWidget(self.quality_gate_checkbox, 4, 0)
-            self.advanced_options_layout.addWidget(self.quality_gate_info_button, 4, 1)
-            self.advanced_options_layout.addWidget(self.staff_crop_recovery_checkbox, 5, 0)
-            self.advanced_options_layout.addWidget(self.staff_crop_recovery_info_button, 5, 1)
-            self.advanced_options_layout.addWidget(self.diagnostics_frame, 6, 0, 1, 3)
+            self.advanced_options_layout.addWidget(self.video_resolution_label, 3, 0)
+            self.advanced_options_layout.addWidget(self.video_resolution_info_button, 3, 1)
+            self.advanced_options_layout.addWidget(self.video_resolution_combo, 3, 2)
+            self.advanced_options_layout.addWidget(self.preprocess_checkbox, 4, 0)
+            self.advanced_options_layout.addWidget(self.preprocess_info_button, 4, 1)
+            self.advanced_options_layout.addWidget(self.quality_gate_checkbox, 5, 0)
+            self.advanced_options_layout.addWidget(self.quality_gate_info_button, 5, 1)
+            self.advanced_options_layout.addWidget(self.staff_crop_recovery_checkbox, 6, 0)
+            self.advanced_options_layout.addWidget(self.staff_crop_recovery_info_button, 6, 1)
+            self.advanced_options_layout.addWidget(self.diagnostics_frame, 7, 0, 1, 3)
             self.advanced_options_layout.setColumnStretch(2, 1)
 
             self._add_grid_widgets(
@@ -1765,13 +1793,16 @@ class MainClef(QMainWindow, Ui_MainWindow):
         self.advanced_options_layout.addWidget(self.video_mode_label, 4, 0)
         self.advanced_options_layout.addWidget(self.video_mode_info_button, 4, 1)
         self.advanced_options_layout.addWidget(self.video_mode_combo, 5, 0, 1, 2)
-        self.advanced_options_layout.addWidget(self.preprocess_checkbox, 6, 0)
-        self.advanced_options_layout.addWidget(self.preprocess_info_button, 6, 1)
-        self.advanced_options_layout.addWidget(self.quality_gate_checkbox, 7, 0)
-        self.advanced_options_layout.addWidget(self.quality_gate_info_button, 7, 1)
-        self.advanced_options_layout.addWidget(self.staff_crop_recovery_checkbox, 8, 0)
-        self.advanced_options_layout.addWidget(self.staff_crop_recovery_info_button, 8, 1)
-        self.advanced_options_layout.addWidget(self.diagnostics_frame, 9, 0, 1, 2)
+        self.advanced_options_layout.addWidget(self.video_resolution_label, 6, 0)
+        self.advanced_options_layout.addWidget(self.video_resolution_info_button, 6, 1)
+        self.advanced_options_layout.addWidget(self.video_resolution_combo, 7, 0, 1, 2)
+        self.advanced_options_layout.addWidget(self.preprocess_checkbox, 8, 0)
+        self.advanced_options_layout.addWidget(self.preprocess_info_button, 8, 1)
+        self.advanced_options_layout.addWidget(self.quality_gate_checkbox, 9, 0)
+        self.advanced_options_layout.addWidget(self.quality_gate_info_button, 9, 1)
+        self.advanced_options_layout.addWidget(self.staff_crop_recovery_checkbox, 10, 0)
+        self.advanced_options_layout.addWidget(self.staff_crop_recovery_info_button, 10, 1)
+        self.advanced_options_layout.addWidget(self.diagnostics_frame, 11, 0, 1, 2)
         self.advanced_options_layout.setColumnStretch(0, 1)
         self.advanced_options_layout.setColumnStretch(1, 0)
 
@@ -1824,6 +1855,7 @@ class MainClef(QMainWindow, Ui_MainWindow):
         self.annotation_mode_combo.currentIndexChanged.connect(lambda index: self._refresh_preset_buttons())
         self.sound_combo.currentIndexChanged.connect(lambda index: self._refresh_preset_buttons())
         self.video_mode_combo.currentIndexChanged.connect(lambda index: self._refresh_preset_buttons())
+        self.video_resolution_combo.currentIndexChanged.connect(lambda index: self._refresh_preset_buttons())
         self.quality_gate_checkbox.toggled.connect(self._sync_quality_gate_options)
 
         self.home_results_button.clicked.connect(self.open_results_folder)
@@ -1940,6 +1972,7 @@ class MainClef(QMainWindow, Ui_MainWindow):
             self.output_video.setChecked(True)
             self._set_combo_data(self.annotation_mode_combo, "clean")
             self._set_combo_data(self.video_mode_combo, "piano_roll")
+            self._set_combo_data(self.video_resolution_combo, "720p")
             self._set_combo_data(self.sound_combo, "soundfont_piano")
         elif preset_key == "full":
             self.output_all.setChecked(True)
@@ -1963,7 +1996,14 @@ class MainClef(QMainWindow, Ui_MainWindow):
             return "review"
         if annotations and audio and midi and not video:
             return "listen"
-        if annotations and audio and video and not midi:
+        if (
+            annotations
+            and audio
+            and video
+            and not midi
+            and self._current_video_mode() == "piano_roll"
+            and self._current_video_resolution() == "720p"
+        ):
             return "video"
         return None
 
@@ -2036,7 +2076,7 @@ class MainClef(QMainWindow, Ui_MainWindow):
         if not hasattr(self, "video_mode_combo"):
             return "score"
         mode = self.video_mode_combo.currentData()
-        return mode if mode in ("score", "piano_roll") else "score"
+        return mode if mode in ("score", "piano_roll", "showcase") else "score"
 
     def _refresh_video_mode_options(self):
         if not hasattr(self, "video_mode_combo"):
@@ -2046,9 +2086,28 @@ class MainClef(QMainWindow, Ui_MainWindow):
         self.video_mode_combo.clear()
         self.video_mode_combo.addItem(self.tr("video_mode_score"), "score")
         self.video_mode_combo.addItem(self.tr("video_mode_piano_roll"), "piano_roll")
+        self.video_mode_combo.addItem(self.tr("video_mode_showcase"), "showcase")
         index = self.video_mode_combo.findData(current_mode)
         self.video_mode_combo.setCurrentIndex(max(0, index))
         self.video_mode_combo.blockSignals(False)
+
+    def _current_video_resolution(self):
+        if not hasattr(self, "video_resolution_combo"):
+            return "720p"
+        resolution = self.video_resolution_combo.currentData()
+        return resolution if resolution in ("720p", "1080p") else "720p"
+
+    def _refresh_video_resolution_options(self):
+        if not hasattr(self, "video_resolution_combo"):
+            return
+        current_resolution = self._current_video_resolution()
+        self.video_resolution_combo.blockSignals(True)
+        self.video_resolution_combo.clear()
+        self.video_resolution_combo.addItem(self.tr("video_resolution_720"), "720p")
+        self.video_resolution_combo.addItem(self.tr("video_resolution_1080"), "1080p")
+        index = self.video_resolution_combo.findData(current_resolution)
+        self.video_resolution_combo.setCurrentIndex(max(0, index))
+        self.video_resolution_combo.blockSignals(False)
 
     def _update_video_mode_enabled(self):
         if not hasattr(self, "video_mode_combo"):
@@ -2056,6 +2115,8 @@ class MainClef(QMainWindow, Ui_MainWindow):
         enabled = self._video_output_selected()
         self.video_mode_label.setEnabled(enabled)
         self.video_mode_combo.setEnabled(enabled)
+        self.video_resolution_label.setEnabled(enabled)
+        self.video_resolution_combo.setEnabled(enabled)
 
     def _update_annotation_mode_enabled(self):
         if not hasattr(self, "annotation_mode_combo"):
@@ -2068,6 +2129,7 @@ class MainClef(QMainWindow, Ui_MainWindow):
         annotation_mode = self._current_annotation_mode()
         timbre = self._current_timbre()
         video_mode = self._current_video_mode()
+        video_resolution = self._current_video_resolution()
         quality_gate = self.quality_gate_checkbox.isChecked()
         preprocess = self.preprocess_checkbox.isChecked()
         staff_crop_recovery = self.staff_crop_recovery_checkbox.isChecked()
@@ -2085,6 +2147,7 @@ class MainClef(QMainWindow, Ui_MainWindow):
                 "annotation_mode": annotation_mode,
                 "timbre": timbre,
                 "video_mode": video_mode,
+                "video_resolution": video_resolution,
             }
         scientific_report = self.output_scientific.isChecked() or quality_gate
         return {
@@ -2100,6 +2163,7 @@ class MainClef(QMainWindow, Ui_MainWindow):
             "annotation_mode": annotation_mode,
             "timbre": timbre,
             "video_mode": video_mode,
+            "video_resolution": video_resolution,
         }
 
     def _set_progress_animation(self, active):
@@ -2282,6 +2346,8 @@ class MainClef(QMainWindow, Ui_MainWindow):
         self._refresh_timbre_options()
         self.video_mode_label.setText(self.tr("video_mode"))
         self._refresh_video_mode_options()
+        self.video_resolution_label.setText(self.tr("video_resolution"))
+        self._refresh_video_resolution_options()
         self.preprocess_checkbox.setText(self.tr("preprocess"))
         self.quality_gate_checkbox.setText(self.tr("quality_gate"))
         self.staff_crop_recovery_checkbox.setText(self.tr("staff_crop_recovery"))
@@ -2651,6 +2717,8 @@ class MainClef(QMainWindow, Ui_MainWindow):
         self.staff_crop_recovery_checkbox.setEnabled(enabled)
         self.video_mode_label.setEnabled(enabled and self._video_output_selected())
         self.video_mode_combo.setEnabled(enabled and self._video_output_selected())
+        self.video_resolution_label.setEnabled(enabled and self._video_output_selected())
+        self.video_resolution_combo.setEnabled(enabled and self._video_output_selected())
         if enabled:
             self._sync_output_controls(self.output_all.isChecked())
             self._update_annotation_mode_enabled()
@@ -2670,6 +2738,8 @@ class MainClef(QMainWindow, Ui_MainWindow):
             self.sound_combo.setEnabled(False)
             self.video_mode_label.setEnabled(False)
             self.video_mode_combo.setEnabled(False)
+            self.video_resolution_label.setEnabled(False)
+            self.video_resolution_combo.setEnabled(False)
         self._refresh_output_cards()
 
     def _set_result_buttons_enabled(self, enabled):
@@ -2779,6 +2849,24 @@ class MainClef(QMainWindow, Ui_MainWindow):
             layout.addLayout(self._make_report_bar(label, value, total))
         return card
 
+    def _make_report_text_card(self, title, lines):
+        card = QFrame()
+        card.setObjectName("outputCard")
+        layout = QVBoxLayout(card)
+        layout.setContentsMargins(16, 14, 16, 16)
+        layout.setSpacing(8)
+
+        title_label = QLabel(title)
+        title_label.setObjectName("sectionTitle")
+        title_label.setWordWrap(True)
+        body = QLabel("\n".join(str(line) for line in (lines or [])))
+        body.setObjectName("dialogBody")
+        body.setWordWrap(True)
+
+        layout.addWidget(title_label)
+        layout.addWidget(body)
+        return card
+
     def _report_validation_text(self, validation):
         validation = validation or {}
         issues = validation.get("issues", []) if isinstance(validation, dict) else []
@@ -2793,6 +2881,35 @@ class MainClef(QMainWindow, Ui_MainWindow):
             suffix = f"+{len(issues) - 8} more" if self.language == "en" else f"+{len(issues) - 8} itens"
             lines.append(suffix)
         return "\n".join(lines)
+
+    def _scientific_action_lines(self, quality, review):
+        quality = quality or {}
+        review = review or {}
+        event_count = int(review.get("event_count", 0) or 0)
+        review_load = float(quality.get("review_load_pct", 0) or 0)
+        max_gap = float(quality.get("max_gap_ms", 0) or 0)
+        invalid = int(review.get("invalid_duration_count", 0) or 0)
+        hand_balance = float(quality.get("balanced_hand_pct", 100) or 100)
+        hand_total = int(review.get("left_hand_count", 0) or 0) + int(review.get("right_hand_count", 0) or 0)
+        recovery = review.get("staff_crop_recovery") or {}
+
+        if self.language == "pt":
+            lines = []
+            if event_count == 0:
+                lines.append("Nenhuma nota tocavel foi exportada. Verifique o modelo e a qualidade da partitura.")
+            if review_load > 12:
+                lines.append("Revise as deteccoes com baixa confianca antes de compartilhar os arquivos.")
+            if max_gap > 1800:
+                lines.append("Confira gaps grandes na linha do tempo; eles podem indicar pausas, compassos ou transicoes nao interpretadas.")
+            if invalid:
+                lines.append("Alguns eventos tem duracao invalida e devem ser inspecionados.")
+            if hand_balance < 18 and hand_total >= 20:
+                lines.append("A distribuicao entre maos esta muito desigual. Em partituras para piano, revise o agrupamento das pautas.")
+            if recovery.get("recovered_count", 0):
+                lines.append("A recuperacao por recorte adicionou notas. Abra a anotacao detalhada para confirmar esses pontos.")
+            return lines or ["Nenhum alerta cientifico imediato foi encontrado."]
+
+        return quality.get("action_items") or ["No immediate scientific warnings were found."]
 
     def _corrections_path_for_report(self, data_path):
         data_path = Path(data_path)
@@ -2985,6 +3102,7 @@ class MainClef(QMainWindow, Ui_MainWindow):
         timing = payload.get("timing_interpretation", {})
         validation = payload.get("validation") or {}
         reliability = payload.get("reliability_analysis", {})
+        quality = payload.get("quality_profile", {})
 
         dialog = QDialog(self)
         dialog.setObjectName("appDialog")
@@ -3051,6 +3169,33 @@ class MainClef(QMainWindow, Ui_MainWindow):
         for column in range(3):
             metrics_grid.setColumnStretch(column, 1)
         scroll_layout.addLayout(metrics_grid)
+
+        quality_grid = QGridLayout()
+        quality_grid.setHorizontalSpacing(12)
+        quality_grid.setVerticalSpacing(12)
+        quality_metrics = (
+            ("Quality score" if self.language == "en" else "Pontuacao", quality.get("quality_score", "-")),
+            ("Review load" if self.language == "en" else "Carga de revisao", f"{quality.get('review_load_pct', 0)}%"),
+            ("Note density" if self.language == "en" else "Densidade", f"{quality.get('note_density_per_second', 0)}/s"),
+            ("Hand balance" if self.language == "en" else "Equilibrio das maos", f"{quality.get('balanced_hand_pct', 0)}%"),
+        )
+        for index, (label, value) in enumerate(quality_metrics):
+            quality_grid.addWidget(self._make_report_metric_card(label, value), index // 4, index % 4)
+        for column in range(4):
+            quality_grid.setColumnStretch(column, 1)
+        scroll_layout.addLayout(quality_grid)
+        scroll_layout.addWidget(self._make_report_chart_card(
+            self.tr("scientific_quality_overview"),
+            {
+                "Quality" if self.language == "en" else "Qualidade": quality.get("quality_score", 0) or 0,
+                "Review load" if self.language == "en" else "Revisao": quality.get("review_load_pct", 0) or 0,
+                "Hand balance" if self.language == "en" else "Maos": quality.get("balanced_hand_pct", 0) or 0,
+            },
+        ))
+        scroll_layout.addWidget(self._make_report_text_card(
+            self.tr("scientific_action_items"),
+            self._scientific_action_lines(quality, review),
+        ))
 
         charts_grid = QGridLayout()
         charts_grid.setHorizontalSpacing(12)

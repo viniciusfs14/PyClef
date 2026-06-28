@@ -14,7 +14,7 @@ MESSAGES = {
         "poppler_ready": "PDF tools are available.",
         "poppler_missing": "Poppler was not found. PDF input may fail.",
         "ffmpeg_ready": "FFmpeg is available for MP3/video work.",
-        "ffmpeg_missing": "FFmpeg was not found in PATH. MP3/video export may fail.",
+        "ffmpeg_missing": "FFmpeg was not found. MP3/video export may fail.",
         "soundfont_ready": "SoundFont file is available locally.",
         "soundfont_download": "SoundFont is not local yet, but an automatic download URL is configured.",
         "soundfont_missing": "SoundFont is missing and no download URL is configured.",
@@ -28,7 +28,7 @@ MESSAGES = {
         "poppler_ready": "Ferramentas de PDF disponiveis.",
         "poppler_missing": "Poppler nao encontrado. Entrada por PDF pode falhar.",
         "ffmpeg_ready": "FFmpeg disponivel para MP3/video.",
-        "ffmpeg_missing": "FFmpeg nao encontrado no PATH. Exportacao MP3/video pode falhar.",
+        "ffmpeg_missing": "FFmpeg nao encontrado. Exportacao MP3/video pode falhar.",
         "soundfont_ready": "SoundFont disponivel localmente.",
         "soundfont_download": "O SoundFont ainda nao esta local, mas ha URL configurada para download automatico.",
         "soundfont_missing": "SoundFont ausente e sem URL de download configurada.",
@@ -51,6 +51,14 @@ def _existing_command(command_name, directory=None):
     return shutil.which(command_name)
 
 
+def _existing_configured_tool(tool_path, fallback_name):
+    if tool_path and ("/" in str(tool_path) or "\\" in str(tool_path)):
+        candidate = Path(tool_path)
+        if candidate.exists() and candidate.is_file():
+            return str(candidate)
+    return shutil.which(str(tool_path or fallback_name)) or shutil.which(fallback_name)
+
+
 def collect_environment_diagnostics(language="en"):
     language = language if language in MESSAGES else "en"
     checks = []
@@ -69,7 +77,7 @@ def collect_environment_diagnostics(language="en"):
     else:
         checks.append(DiagnosticCheck("poppler", "Poppler", "warning", _tr(language, "poppler_missing"), config.POPPLER_PATH))
 
-    ffmpeg_path = shutil.which("ffmpeg")
+    ffmpeg_path = _existing_configured_tool(config.FFMPEG_PATH, "ffmpeg")
     if ffmpeg_path:
         checks.append(DiagnosticCheck("ffmpeg", "FFmpeg", "ok", _tr(language, "ffmpeg_ready"), ffmpeg_path))
     else:

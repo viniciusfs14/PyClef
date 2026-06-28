@@ -126,6 +126,81 @@ def build_timing_interpretation(events):
     }
 
 
+def build_quality_profile(events, review, timing, duration_ms):
+    event_count = len(events)
+    duration_seconds = max(0.001, _safe_number(duration_ms) / 1000)
+    average_confidence = review.get("average_confidence")
+    if average_confidence is None:
+        confidence_values = [
+            _safe_number(event.get("confidence"))
+            for event in events
+            if event.get("confidence") is not None
+        ]
+        average_confidence = sum(confidence_values) / len(confidence_values) if confidence_values else 0
+    average_confidence = _safe_number(average_confidence)
+
+    low_count = int(review.get("low_confidence_count", 0) or 0)
+    review_count = int(review.get("review_confidence_count", 0) or 0)
+    invalid_duration_count = int(review.get("invalid_duration_count", 0) or 0)
+    left_count = int(review.get("left_hand_count", 0) or 0)
+    right_count = int(review.get("right_hand_count", 0) or 0)
+    hand_total = max(1, left_count + right_count)
+    balanced_hand_pct = round((min(left_count, right_count) / hand_total) * 100, 1)
+    review_load_pct = round(((low_count + review_count) / max(1, event_count)) * 100, 1)
+    low_confidence_pct = round((low_count / max(1, event_count)) * 100, 1)
+    density = round(event_count / duration_seconds, 2)
+    average_gap_ms = _safe_number(timing.get("average_gap_ms"))
+    max_gap_ms = _safe_number(timing.get("max_gap_ms"))
+
+    score = average_confidence * 100
+    score -= review_load_pct * 0.45
+    score -= min(18, invalid_duration_count * 4)
+    if event_count == 0:
+        score = 0
+    elif max_gap_ms > 1800:
+        score -= 6
+    score = int(max(0, min(100, round(score))))
+
+    if event_count == 0:
+        status = "empty"
+    elif score >= 88 and review_load_pct <= 4:
+        status = "strong"
+    elif score >= 72 and review_load_pct <= 12:
+        status = "ready"
+    else:
+        status = "review"
+
+    action_items = []
+    if event_count == 0:
+        action_items.append("No playable notes were exported. Check model setup and source quality.")
+    if review_load_pct > 12:
+        action_items.append("Review low-confidence detections before sharing the exported files.")
+    if max_gap_ms > 1800:
+        action_items.append("Check large timeline gaps; they can indicate missed rests, barlines, or system transitions.")
+    if invalid_duration_count:
+        action_items.append("Some events have invalid durations and should be inspected.")
+    if balanced_hand_pct < 18 and hand_total >= 20:
+        action_items.append("Hand distribution is highly skewed. If this is a piano score, review staff grouping.")
+    recovery = review.get("staff_crop_recovery") or {}
+    if recovery.get("recovered_count", 0):
+        action_items.append("Staff-crop recovery added notes. Open detailed annotations to confirm recovered detections.")
+    if not action_items:
+        action_items.append("No immediate scientific warnings were found.")
+
+    return {
+        "quality_score": score,
+        "status": status,
+        "review_load_pct": review_load_pct,
+        "low_confidence_pct": low_confidence_pct,
+        "note_density_per_second": density,
+        "balanced_hand_pct": balanced_hand_pct,
+        "max_polyphony": int(timing.get("max_polyphony", 0) or 0),
+        "average_gap_ms": round(average_gap_ms, 2),
+        "max_gap_ms": int(max_gap_ms),
+        "action_items": action_items,
+    }
+
+
 def build_scientific_payload(
     *,
     score_events,
@@ -142,6 +217,8 @@ def build_scientific_payload(
     validation_payload = validation or {}
     if hasattr(validation_payload, "to_dict"):
         validation_payload = validation_payload.to_dict()
+    timing_interpretation = build_timing_interpretation(events)
+    review_payload = dict(review or {})
 
     payload = {
         "format_version": "1.0",
@@ -155,11 +232,17 @@ def build_scientific_payload(
         },
         "recognition": {
             "event_count": len(events),
-            "review": dict(review or {}),
+            "review": review_payload,
             "confidence_histogram": _confidence_histogram(events),
         },
         "musical_interpretation": build_musical_interpretation(events, key_signatures),
-        "timing_interpretation": build_timing_interpretation(events),
+        "timing_interpretation": timing_interpretation,
+        "quality_profile": build_quality_profile(
+            events,
+            review_payload,
+            timing_interpretation,
+            duration_ms,
+        ),
         "validation": validation_payload,
         "reliability_analysis": {
             "recommended_chart": "confidence_distribution",
@@ -218,6 +301,7 @@ def render_scientific_html(payload):
     validation = payload.get("validation") or {}
     issues = validation.get("issues", []) if isinstance(validation, dict) else []
     reliability = payload.get("reliability_analysis", {})
+    quality = payload.get("quality_profile", {})
     metrics = "".join(
         (
             _metric("Events", review.get("event_count", payload.get("recognition", {}).get("event_count", 0))),
@@ -240,6 +324,18 @@ def render_scientific_html(payload):
         f'{html.escape(issue.get("message", ""))}</li>'
         for issue in issues
     ) or "<li>No validation warnings were reported.</li>"
+    action_rows = "".join(
+        f"<li>{html.escape(str(item))}</li>"
+        for item in quality.get("action_items", [])
+    ) or "<li>No immediate scientific warnings were found.</li>"
+    quality_metrics = "".join(
+        (
+            _metric("Quality score", quality.get("quality_score", "-")),
+            _metric("Review load", f'{quality.get("review_load_pct", 0)}%'),
+            _metric("Note density", f'{quality.get("note_density_per_second", 0)}/s'),
+            _metric("Hand balance", f'{quality.get("balanced_hand_pct", 0)}%'),
+        )
+    )
 
     return f"""<!doctype html>
 <html lang="en">
@@ -324,6 +420,12 @@ def render_scientific_html(payload):
       <p>Generated from PyClef predictions, validation checks, and musical interpretation metadata.</p>
       <div class="metrics">{metrics}</div>
     </header>
+    <section>
+      <h2>Quality overview</h2>
+      <div class="metrics">{quality_metrics}</div>
+      <p>Status: <code>{html.escape(str(quality.get("status", "-")))}</code></p>
+      <ul>{action_rows}</ul>
+    </section>
     <section>
       <h2>Recognition charts</h2>
       <div class="grid">

@@ -174,6 +174,9 @@ STAFF_COLOR_BASS = (125, 232, 132)
 STAFF_COLOR_OTHER = (225, 105, 65)
 STAFF_COLOR_REVIEW = (0, 198, 255)
 STAFF_COLOR_LOW_CONFIDENCE = (0, 120, 255)
+ACTIVE_NOTE_RED = (42, 42, 255)
+ACTIVE_NOTE_RED_DARK = (0, 0, 130)
+ACTIVE_NOTE_RED_LIGHT = (95, 95, 255)
 PIANO_ROLL_WIDTH = 1920
 PIANO_ROLL_HEIGHT = 1080
 PIANO_ROLL_LEAD_MS = 3400
@@ -188,6 +191,10 @@ PIANO_ROLL_RIGHT_COLOR = (255, 214, 64)
 PIANO_ROLL_RIGHT_DARK = (171, 140, 17)
 PIANO_ROLL_LEFT_COLOR = (136, 255, 108)
 PIANO_ROLL_LEFT_DARK = (60, 154, 30)
+VIDEO_RESOLUTIONS = {
+    "720p": (1280, 720),
+    "1080p": (1920, 1080),
+}
 SYSTEM_WIDTH_BEATS = rhythm.SYSTEM_WIDTH_BEATS
 MIN_COLUMN_ADVANCE_BEATS = rhythm.MIN_COLUMN_ADVANCE_BEATS
 SYSTEM_GAP_BEATS = rhythm.SYSTEM_GAP_BEATS
@@ -1762,21 +1769,94 @@ def draw_reading_marker(frame, playhead, t_ms):
     cv2.circle(frame, (x, y), 9, glow_color, 2, cv2.LINE_AA)
     cv2.circle(frame, (x, y), 3, core_color, -1, cv2.LINE_AA)
 
+def _active_note_rect(frame, event):
+    if event.get("box") is not None:
+        values = [float(value) for value in event["box"]]
+        if len(values) >= 4:
+            x1, y1, x2, y2 = values[:4]
+        else:
+            x1 = x2 = float(event.get("x", 0))
+            y1 = y2 = float(event.get("y", 0))
+    else:
+        x = float(event.get("x", 0))
+        y = float(event.get("y", 0))
+        size = max(14, min(frame.shape[:2]) * 0.012)
+        x1, y1, x2, y2 = x - size, y - size, x + size, y + size
+
+    pad = max(4, int(round(min(frame.shape[:2]) * 0.004)))
+    x1 = int(round(max(0, min(frame.shape[1] - 1, x1 - pad))))
+    y1 = int(round(max(0, min(frame.shape[0] - 1, y1 - pad))))
+    x2 = int(round(max(x1 + 1, min(frame.shape[1], x2 + pad))))
+    y2 = int(round(max(y1 + 1, min(frame.shape[0], y2 + pad))))
+    return x1, y1, x2, y2
+
+def _active_note_label(event):
+    label = event.get("label")
+    if label:
+        return str(label)
+    if event.get("midi") is not None:
+        return midi_note_name(event["midi"])
+    return ""
+
 def draw_active_note_highlight(frame, event, t_ms):
-    x = int(event['x'])
-    y = int(event['y'])
+    rect = _active_note_rect(frame, event)
+    x1, y1, x2, y2 = rect
     duration = max(1, event['dur'])
     progress = min(1, max(0, (t_ms - event['time']) / duration))
     pulse = 0.5 + 0.5 * np.sin(progress * np.pi)
     volume = max(0.35, min(1.0, event.get('vol', 0.72)))
-    halo_color = (64, 214, 255)
-    core_color = (255, 255, 255)
-    radius = int(14 + 12 * pulse * volume)
 
-    draw_soft_circle(frame, (x, y), radius + 20, halo_color, 0.09 + 0.06 * volume)
-    draw_soft_circle(frame, (x, y), radius + 6, halo_color, 0.16 + 0.07 * volume)
-    cv2.circle(frame, (x, y), radius, halo_color, 2, cv2.LINE_AA)
-    cv2.circle(frame, (x, y), 4, core_color, -1, cv2.LINE_AA)
+    draw_alpha_rect(frame, rect, ACTIVE_NOTE_RED, 0.32 + (0.16 * pulse * volume))
+    outline = max(2, int(round(min(frame.shape[:2]) * 0.0032)))
+    cv2.rectangle(frame, (x1, y1), (x2, y2), ACTIVE_NOTE_RED, outline, cv2.LINE_AA)
+    cv2.rectangle(
+        frame,
+        (max(0, x1 - outline), max(0, y1 - outline)),
+        (min(frame.shape[1] - 1, x2 + outline), min(frame.shape[0] - 1, y2 + outline)),
+        ACTIVE_NOTE_RED_LIGHT,
+        1,
+        cv2.LINE_AA,
+    )
+
+    label = _active_note_label(event)
+    if not label:
+        return
+
+    font_scale = max(0.44, min(0.92, frame.shape[1] / 1900 * 0.66))
+    thickness = max(1, int(round(font_scale * 2.1)))
+    (text_w, text_h), baseline = cv2.getTextSize(label, FONT_FACE, font_scale, thickness)
+    pad_x = max(7, int(text_h * 0.36))
+    pad_y = max(4, int(text_h * 0.22))
+    label_w = text_w + (pad_x * 2)
+    label_h = text_h + baseline + (pad_y * 2)
+
+    label_left = int(round((x1 + x2 - label_w) / 2))
+    label_top = y1 - label_h - max(5, outline + 2)
+    if label_top < 0:
+        label_top = y2 + max(5, outline + 2)
+    label_left = max(0, min(max(0, frame.shape[1] - label_w), label_left))
+    label_top = max(0, min(max(0, frame.shape[0] - label_h), label_top))
+    label_rect = (label_left, label_top, label_left + label_w, label_top + label_h)
+
+    draw_round_rect(frame, label_rect, ACTIVE_NOTE_RED_DARK, radius=max(5, label_h // 4), alpha=0.94)
+    cv2.rectangle(
+        frame,
+        (label_rect[0], label_rect[1]),
+        (label_rect[2], label_rect[3]),
+        ACTIVE_NOTE_RED,
+        1,
+        cv2.LINE_AA,
+    )
+    cv2.putText(
+        frame,
+        label,
+        (label_left + pad_x, label_top + pad_y + text_h),
+        FONT_FACE,
+        font_scale,
+        (255, 255, 255),
+        thickness,
+        cv2.LINE_AA,
+    )
 
 def render_video_frame(page_frames, video_events, active_events, t_ms, transition_ms=450):
     previous_event, next_event = get_event_context(video_events, t_ms)
@@ -1809,10 +1889,6 @@ def render_video_frame(page_frames, video_events, active_events, t_ms, transitio
         current_page = next_event['page']
     else:
         frame = page_frames[current_page].copy()
-
-    playhead = interpolate_playhead(previous_event, next_event, t_ms)
-    if playhead and int(playhead['page']) == current_page:
-        draw_reading_marker(frame, playhead, t_ms)
 
     for event in active_events:
         if event['page'] != current_page:
@@ -2206,14 +2282,22 @@ def render_piano_roll_frame(note_events, t_ms, duration_ms, roll_state):
 
     return frame
 
-def build_piano_roll_state(note_events):
-    width = PIANO_ROLL_WIDTH
-    height = PIANO_ROLL_HEIGHT
-    left = 84
-    right = width - 84
-    top = 48
-    keyboard_y = 782
-    keyboard_h = 250
+def build_piano_roll_state(
+    note_events,
+    *,
+    width=PIANO_ROLL_WIDTH,
+    height=PIANO_ROLL_HEIGHT,
+    left=None,
+    right=None,
+    top=48,
+    keyboard_y=None,
+    keyboard_h=None,
+    lead_ms=PIANO_ROLL_LEAD_MS,
+):
+    left = 84 if left is None else int(left)
+    right = (width - 84) if right is None else int(right)
+    keyboard_y = 782 if keyboard_y is None else int(keyboard_y)
+    keyboard_h = 250 if keyboard_h is None else int(keyboard_h)
     min_midi, max_midi = clamp_midi_range(note_events)
     key_layout, white_width, black_width = build_piano_key_layout(min_midi, max_midi, left, right)
     state = {
@@ -2229,7 +2313,7 @@ def build_piano_roll_state(note_events):
         "key_layout": key_layout,
         "white_width": white_width,
         "black_width": black_width,
-        "lead_ms": PIANO_ROLL_LEAD_MS,
+        "lead_ms": lead_ms,
     }
     background = np.zeros((height, width, 3), dtype=np.uint8)
     draw_piano_roll_background(background, top, keyboard_y, left, right, key_layout)
@@ -2246,6 +2330,363 @@ def build_piano_roll_state(note_events):
     )
     state["background"] = background
     return state
+
+def video_resolution_size(resolution):
+    return VIDEO_RESOLUTIONS.get(resolution, VIDEO_RESOLUTIONS["720p"])
+
+def build_piano_roll_state_for_resolution(note_events, resolution):
+    width, height = video_resolution_size(resolution)
+    margin_x = max(42, int(width * 0.044))
+    top = max(30, int(height * 0.044))
+    keyboard_h = max(136, int(height * 0.23))
+    keyboard_y = height - keyboard_h - max(30, int(height * 0.045))
+    return build_piano_roll_state(
+        note_events,
+        width=width,
+        height=height,
+        left=margin_x,
+        right=width - margin_x,
+        top=top,
+        keyboard_y=keyboard_y,
+        keyboard_h=keyboard_h,
+        lead_ms=PIANO_ROLL_LEAD_MS,
+    )
+
+def build_showcase_system_segments(note_events):
+    time_groups = {}
+    for event in note_events:
+        page = int(event.get("page", 0))
+        time_key = int(round(float(event.get("time", 0))))
+        time_groups.setdefault((page, time_key), []).append(event)
+
+    columns = []
+    for (page, time_key), events in time_groups.items():
+        xs = [float(event.get("x", 0)) for event in events]
+        ys = [float(event.get("y", 0)) for event in events]
+        end_time = max(float(event.get("time", 0)) + float(event.get("dur", 0)) for event in events)
+        columns.append({
+            "page": page,
+            "start_time": time_key,
+            "end_time": end_time,
+            "x_min": min(xs),
+            "x_max": max(xs),
+            "y_min": min(ys),
+            "y_max": max(ys),
+            "center_x": sum(xs) / len(xs),
+            "center_y": sum(ys) / len(ys),
+        })
+    columns.sort(key=lambda item: (item["start_time"], item["page"], item["center_x"]))
+
+    segments = []
+    current = None
+    previous_column = None
+    for column in columns:
+        starts_new_segment = current is None or column["page"] != current["page"]
+        if current is not None and previous_column is not None and column["page"] == current["page"]:
+            x_reset = column["center_x"] < previous_column["center_x"] - 170
+            y_jump = abs(column["center_y"] - current["center_y"]) > 230 and column["center_x"] < previous_column["center_x"] + 120
+            time_gap = column["start_time"] > current["end_time"] + 2400
+            starts_new_segment = x_reset or y_jump or time_gap
+
+        if starts_new_segment:
+            current = {
+                "page": column["page"],
+                "start_time": column["start_time"],
+                "end_time": column["end_time"],
+                "x_min": column["x_min"],
+                "x_max": column["x_max"],
+                "y_min": column["y_min"],
+                "y_max": column["y_max"],
+                "center_y": column["center_y"],
+                "view_cache": None,
+                "crop_rect": None,
+            }
+            segments.append(current)
+        else:
+            current["end_time"] = max(current["end_time"], column["end_time"])
+            current["x_min"] = min(current["x_min"], column["x_min"])
+            current["x_max"] = max(current["x_max"], column["x_max"])
+            current["y_min"] = min(current["y_min"], column["y_min"])
+            current["y_max"] = max(current["y_max"], column["y_max"])
+            current["center_y"] = (current["center_y"] * 0.82) + (column["center_y"] * 0.18)
+
+        previous_column = column
+
+    for index, segment in enumerate(segments):
+        if index + 1 < len(segments) and segments[index + 1]["page"] == segment["page"]:
+            segment["until_time"] = segments[index + 1]["start_time"]
+        else:
+            segment["until_time"] = segment["end_time"] + 1600
+    return segments
+
+def fit_frame_to_canvas(frame, width, height, background=PIANO_ROLL_BG):
+    frame_h, frame_w = frame.shape[:2]
+    canvas = np.full((height, width, 3), background, dtype=np.uint8)
+    scale = min(width / max(1, frame_w), height / max(1, frame_h))
+    target_w = max(1, int(round(frame_w * scale)))
+    target_h = max(1, int(round(frame_h * scale)))
+    resized = cv2.resize(frame, (target_w, target_h), interpolation=cv2.INTER_AREA)
+    x = (width - target_w) // 2
+    y = (height - target_h) // 2
+    canvas[y:y + target_h, x:x + target_w] = resized
+    return canvas
+
+def build_showcase_video_state(note_events, resolution="720p"):
+    width, height = video_resolution_size(resolution)
+    margin_x = max(42, int(width * 0.04))
+    margin_y = max(28, int(height * 0.045))
+    gap = max(18, int(height * 0.03))
+    score_h = int(height * 0.50)
+    roll_h = height - (margin_y * 2) - score_h - gap
+    score_rect = (margin_x, margin_y, width - margin_x, margin_y + score_h)
+    roll_rect = (
+        margin_x,
+        score_rect[3] + gap,
+        width - margin_x,
+        score_rect[3] + gap + roll_h,
+    )
+    roll_w = roll_rect[2] - roll_rect[0]
+    roll_h = roll_rect[3] - roll_rect[1]
+    roll_state = build_piano_roll_state(
+        note_events,
+        width=roll_w,
+        height=roll_h,
+        left=max(28, int(roll_w * 0.024)),
+        right=roll_w - max(28, int(roll_w * 0.024)),
+        top=max(22, int(roll_h * 0.07)),
+        keyboard_y=roll_h - max(92, int(roll_h * 0.29)),
+        keyboard_h=max(74, int(roll_h * 0.24)),
+        lead_ms=2800,
+    )
+    return {
+        "width": width,
+        "height": height,
+        "score_rect": score_rect,
+        "roll_rect": roll_rect,
+        "roll_state": roll_state,
+        "segments": build_showcase_system_segments(note_events),
+        "background": None,
+    }
+
+def draw_showcase_background(frame, score_rect, roll_rect):
+    height, width = frame.shape[:2]
+    frame[:] = PIANO_ROLL_BG
+    add_radial_glow(frame, (int(width * 0.18), int(height * 0.12)), int(width * 0.40), PIANO_ROLL_RIGHT_COLOR, 0.14)
+    add_radial_glow(frame, (int(width * 0.88), int(height * 0.18)), int(width * 0.34), PIANO_ROLL_LEFT_COLOR, 0.11)
+    add_radial_glow(frame, (int(width * 0.52), int(height * 0.78)), int(width * 0.28), (255, 120, 80), 0.06)
+    draw_glass_panel(frame, (28, 28, width - 28, height - 28), 30, strong=False)
+    draw_glass_panel(frame, score_rect, 24, strong=True)
+    draw_glass_panel(frame, roll_rect, 24, strong=False)
+
+def paste_round_image(frame, image, rect, radius=24, alpha=1.0):
+    x1, y1, x2, y2 = [int(value) for value in rect]
+    target_w = max(1, x2 - x1)
+    target_h = max(1, y2 - y1)
+    if image.shape[1] != target_w or image.shape[0] != target_h:
+        image = cv2.resize(image, (target_w, target_h), interpolation=cv2.INTER_AREA)
+    roi = frame[y1:y2, x1:x2]
+    mask = np.zeros((target_h, target_w), dtype=np.uint8)
+    draw_round_rect(mask, (0, 0, target_w - 1, target_h - 1), 255, radius, 1.0)
+    mask_alpha = (mask.astype(np.float32) / 255.0 * alpha)[:, :, None]
+    roi[:] = np.clip(
+        roi.astype(np.float32) * (1.0 - mask_alpha) + image.astype(np.float32) * mask_alpha,
+        0,
+        255,
+    ).astype(np.uint8)
+
+def _showcase_crop(page_frame, playhead, target_rect):
+    page_h, page_w = page_frame.shape[:2]
+    target_w = max(1, target_rect[2] - target_rect[0])
+    target_h = max(1, target_rect[3] - target_rect[1])
+    target_aspect = target_w / target_h
+
+    if playhead:
+        center_x = float(playhead.get("x", page_w / 2))
+        center_y = float(playhead.get("y", page_h / 2))
+        crop_w = min(float(page_w), max(760.0, page_w * 0.56))
+        crop_h = crop_w / max(0.1, target_aspect)
+        if crop_h > page_h:
+            crop_h = float(page_h)
+            crop_w = crop_h * target_aspect
+        if crop_w > page_w:
+            crop_w = float(page_w)
+            crop_h = crop_w / max(0.1, target_aspect)
+    else:
+        crop_w = float(page_w)
+        crop_h = crop_w / max(0.1, target_aspect)
+        center_x = page_w / 2
+        center_y = page_h / 2
+        if crop_h > page_h:
+            crop_h = float(page_h)
+            crop_w = crop_h * target_aspect
+
+    x1 = int(round(center_x - crop_w / 2))
+    y1 = int(round(center_y - crop_h / 2))
+    x1 = max(0, min(max(0, page_w - int(round(crop_w))), x1))
+    y1 = max(0, min(max(0, page_h - int(round(crop_h))), y1))
+    x2 = max(x1 + 1, min(page_w, x1 + int(round(crop_w))))
+    y2 = max(y1 + 1, min(page_h, y1 + int(round(crop_h))))
+    crop = page_frame[y1:y2, x1:x2]
+    resized = cv2.resize(crop, (target_w, target_h), interpolation=cv2.INTER_AREA)
+    return resized, (x1, y1, x2, y2)
+
+def _select_showcase_segment(showcase_state, page, t_ms, fallback_y=None):
+    segments = [
+        segment for segment in showcase_state.get("segments", [])
+        if int(segment.get("page", 0)) == int(page)
+    ]
+    if not segments:
+        return None
+
+    previous = segments[0]
+    for segment in segments:
+        if segment["start_time"] <= t_ms < segment.get("until_time", segment["end_time"] + 1):
+            return segment
+        if segment["start_time"] <= t_ms:
+            previous = segment
+
+    if fallback_y is not None:
+        return min(
+            segments,
+            key=lambda segment: abs(((segment["y_min"] + segment["y_max"]) / 2) - fallback_y),
+        )
+    return previous
+
+def _stable_showcase_crop_rect(page_frame, segment, target_rect):
+    page_h, page_w = page_frame.shape[:2]
+    target_w = max(1, target_rect[2] - target_rect[0])
+    target_h = max(1, target_rect[3] - target_rect[1])
+    target_aspect = target_w / target_h
+
+    if segment is None:
+        crop_w = float(page_w)
+        crop_h = min(float(page_h), crop_w / max(0.1, target_aspect))
+        center_y = page_h / 2
+    else:
+        system_h = max(1.0, float(segment["y_max"] - segment["y_min"]))
+        center_y = (float(segment["y_min"]) + float(segment["y_max"])) / 2
+        crop_w = float(page_w)
+        crop_h = max(system_h * 2.45, crop_w / max(0.1, target_aspect))
+        crop_h = min(float(page_h), crop_h)
+        if crop_h * target_aspect < crop_w:
+            crop_w = min(float(page_w), crop_h * target_aspect)
+
+    center_x = page_w / 2
+    x1 = int(round(center_x - crop_w / 2))
+    y1 = int(round(center_y - crop_h / 2))
+    x1 = max(0, min(max(0, page_w - int(round(crop_w))), x1))
+    y1 = max(0, min(max(0, page_h - int(round(crop_h))), y1))
+    x2 = max(x1 + 1, min(page_w, x1 + int(round(crop_w))))
+    y2 = max(y1 + 1, min(page_h, y1 + int(round(crop_h))))
+    return (x1, y1, x2, y2)
+
+def _showcase_segment_view(page_frame, segment, target_rect):
+    target_w = max(1, target_rect[2] - target_rect[0])
+    target_h = max(1, target_rect[3] - target_rect[1])
+    if segment is not None and segment.get("view_cache") is not None:
+        return segment["view_cache"], segment["crop_rect"]
+
+    crop_rect = _stable_showcase_crop_rect(page_frame, segment, target_rect)
+    x1, y1, x2, y2 = crop_rect
+    crop = page_frame[y1:y2, x1:x2]
+    resized = cv2.resize(crop, (target_w, target_h), interpolation=cv2.INTER_AREA)
+    if segment is not None:
+        segment["view_cache"] = resized
+        segment["crop_rect"] = crop_rect
+    return resized, crop_rect
+
+def _map_showcase_point(point, crop_rect, target_rect):
+    crop_x1, crop_y1, crop_x2, crop_y2 = crop_rect
+    if not (crop_x1 <= point[0] <= crop_x2 and crop_y1 <= point[1] <= crop_y2):
+        return None
+    scale_x = (target_rect[2] - target_rect[0]) / max(1, crop_x2 - crop_x1)
+    scale_y = (target_rect[3] - target_rect[1]) / max(1, crop_y2 - crop_y1)
+    return {
+        "x": target_rect[0] + (point[0] - crop_x1) * scale_x,
+        "y": target_rect[1] + (point[1] - crop_y1) * scale_y,
+    }
+
+def _map_showcase_rect(rect, crop_rect, target_rect):
+    if rect is None:
+        return None
+    crop_x1, crop_y1, crop_x2, crop_y2 = crop_rect
+    x1, y1, x2, y2 = [float(value) for value in rect[:4]]
+    x1 = max(crop_x1, min(crop_x2, x1))
+    x2 = max(crop_x1, min(crop_x2, x2))
+    y1 = max(crop_y1, min(crop_y2, y1))
+    y2 = max(crop_y1, min(crop_y2, y2))
+    if x2 <= x1 or y2 <= y1:
+        return None
+
+    scale_x = (target_rect[2] - target_rect[0]) / max(1, crop_x2 - crop_x1)
+    scale_y = (target_rect[3] - target_rect[1]) / max(1, crop_y2 - crop_y1)
+    return [
+        target_rect[0] + (x1 - crop_x1) * scale_x,
+        target_rect[1] + (y1 - crop_y1) * scale_y,
+        target_rect[0] + (x2 - crop_x1) * scale_x,
+        target_rect[1] + (y2 - crop_y1) * scale_y,
+    ]
+
+def render_showcase_frame(page_frames, note_events, active_events, t_ms, duration_ms, showcase_state):
+    width = showcase_state["width"]
+    height = showcase_state["height"]
+    score_rect = showcase_state["score_rect"]
+    roll_rect = showcase_state["roll_rect"]
+    background = showcase_state.get("background")
+    if background is None:
+        background = np.zeros((height, width, 3), dtype=np.uint8)
+        draw_showcase_background(background, score_rect, roll_rect)
+        showcase_state["background"] = background
+    frame = background.copy()
+
+    previous_event, next_event = get_event_context(note_events, t_ms)
+    if previous_event:
+        current_page = int(previous_event.get("page", 0))
+    elif next_event:
+        current_page = int(next_event.get("page", 0))
+    else:
+        current_page = 0
+    current_page = max(0, min(len(page_frames) - 1, current_page))
+
+    playhead = interpolate_playhead(previous_event, next_event, t_ms)
+    if playhead and int(playhead.get("page", current_page)) != current_page:
+        playhead = None
+
+    segment = _select_showcase_segment(
+        showcase_state,
+        current_page,
+        t_ms,
+        fallback_y=float(playhead["y"]) if playhead else None,
+    )
+    score_view, crop_rect = _showcase_segment_view(page_frames[current_page], segment, score_rect)
+    paste_round_image(frame, score_view, score_rect, radius=24, alpha=1.0)
+    draw_gradient_round_rect(
+        frame,
+        score_rect,
+        (255, 255, 255),
+        (245, 252, 255),
+        24,
+        0.05,
+        PIANO_ROLL_RIGHT_COLOR,
+        0.30,
+    )
+
+    for event in active_events:
+        if int(event.get("page", -1)) != current_page:
+            continue
+        mapped = _map_showcase_point((float(event["x"]), float(event["y"])), crop_rect, score_rect)
+        if mapped:
+            mapped_event = dict(event)
+            mapped_event["x"] = mapped["x"]
+            mapped_event["y"] = mapped["y"]
+            mapped_box = _map_showcase_rect(event.get("box"), crop_rect, score_rect)
+            if mapped_box:
+                mapped_event["box"] = mapped_box
+            draw_active_note_highlight(frame, mapped_event, t_ms)
+
+    roll_frame = render_piano_roll_frame(note_events, t_ms, duration_ms, showcase_state["roll_state"])
+    paste_round_image(frame, roll_frame, roll_rect, radius=24, alpha=1.0)
+    return frame
 
 def build_review_summary(score_events, page_count, duration_ms, key_signatures=None, staff_crop_recovery=None):
     events = list(score_events or [])
@@ -2343,6 +2784,7 @@ def process_score_files(file_list, bpm, progress_callback=None, output_options=N
     use_staff_crop_recovery = options.staff_crop_recovery
     annotation_mode = options.annotation_mode
     video_mode = options.video_mode
+    video_resolution = options.video_resolution
     timbre = audio_utils.normalize_timbre(options.timbre)
     use_soundfont_audio = audio_utils.is_soundfont_timbre(timbre)
     annotated_files = []
@@ -2627,6 +3069,7 @@ def process_score_files(file_list, bpm, progress_callback=None, output_options=N
                         'time': column_time,
                         'x': info["center"][0],
                         'y': info["center"][1],
+                        'box': [int(value) for value in info["box"]],
                         'dur': play_dur,
                         'vol': velocity,
                         'page': p_idx,
@@ -2847,26 +3290,44 @@ def process_score_files(file_list, bpm, progress_callback=None, output_options=N
     video_events.sort(key=lambda event: event['time'])
     temp_video_path = output_dir / f"_{output_stem}_temp.mp4"
     if video_mode == "piano_roll":
-        roll_state = build_piano_roll_state(video_events)
+        roll_state = build_piano_roll_state_for_resolution(video_events, video_resolution)
+        showcase_state = None
+        video_size = (roll_state["width"], roll_state["height"])
         out_v = cv2.VideoWriter(
             str(temp_video_path),
             cv2.VideoWriter_fourcc(*'mp4v'),
             config.FPS,
-            (roll_state["width"], roll_state["height"]),
+            video_size,
+        )
+    elif video_mode == "showcase":
+        roll_state = None
+        showcase_state = build_showcase_video_state(video_events, video_resolution)
+        video_size = (showcase_state["width"], showcase_state["height"])
+        out_v = cv2.VideoWriter(
+            str(temp_video_path),
+            cv2.VideoWriter_fourcc(*'mp4v'),
+            config.FPS,
+            video_size,
         )
     else:
-        vid_h, vid_w = page_frames[0].shape[:2]
+        vid_w, vid_h = video_resolution_size(video_resolution)
         roll_state = None
-        out_v = cv2.VideoWriter(str(temp_video_path), cv2.VideoWriter_fourcc(*'mp4v'), config.FPS, (vid_w, vid_h))
+        showcase_state = None
+        video_size = (vid_w, vid_h)
+        out_v = cv2.VideoWriter(str(temp_video_path), cv2.VideoWriter_fourcc(*'mp4v'), config.FPS, video_size)
     total_frames = int((len(final_audio)/1000)*config.FPS)
     progress_step = max(1, total_frames // 20)
     for f in range(total_frames):
         t_ms = (f/config.FPS)*1000
         if video_mode == "piano_roll":
             frame = render_piano_roll_frame(video_events, t_ms, len(final_audio), roll_state)
+        elif video_mode == "showcase":
+            active = [ev for ev in video_events if ev['time'] <= t_ms <= ev['time'] + ev['dur']]
+            frame = render_showcase_frame(page_frames, video_events, active, t_ms, len(final_audio), showcase_state)
         else:
             active = [ev for ev in video_events if ev['time'] <= t_ms <= ev['time'] + ev['dur']]
             frame = render_video_frame(page_frames, video_events, active, t_ms)
+            frame = fit_frame_to_canvas(frame, video_size[0], video_size[1])
         out_v.write(frame)
         if f % progress_step == 0:
             progress("rendering_frames", 86 + int((f / max(1, total_frames)) * 8))

@@ -1,4 +1,5 @@
 # audio_utils.py
+import os
 import shutil
 import subprocess
 import urllib.error
@@ -9,6 +10,13 @@ import numpy as np
 from pydub import AudioSegment
 from . import config
 from .config import SAMPLE_RATE, LATIN_NOTES
+
+
+if config.FFMPEG_PATH and config.FFMPEG_PATH != "ffmpeg":
+    AudioSegment.converter = str(config.FFMPEG_PATH)
+if config.FFPROBE_PATH and config.FFPROBE_PATH != "ffprobe":
+    AudioSegment.ffprobe = str(config.FFPROBE_PATH)
+
 
 def get_frequency(note_base, accidental, octave):
     semitones = {'C': 0, 'D': 2, 'E': 4, 'F': 5, 'G': 7, 'A': 9, 'B': 11}
@@ -240,7 +248,7 @@ def ensure_default_soundfont(progress_callback=None):
 def resolve_fluidsynth_path():
     configured = config.FLUIDSYNTH_PATH
     if configured and ("/" in configured or "\\" in configured):
-        return configured if shutil.which(configured) or configured else None
+        return configured if shutil.which(configured) or os.path.exists(configured) else None
     return shutil.which(configured) or shutil.which("fluidsynth")
 
 

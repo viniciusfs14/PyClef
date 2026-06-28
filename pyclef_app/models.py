@@ -11,6 +11,7 @@ class OutputOptions:
     annotation_mode: str = "clean"
     timbre: str = "piano"
     video_mode: str = "score"
+    video_resolution: str = "720p"
     language: str = "en"
     include_events: bool = False
     validate_outputs: bool = True
@@ -30,6 +31,7 @@ class OutputOptions:
             annotation_mode=values.get("annotation_mode", "clean"),
             timbre=values.get("timbre", "piano"),
             video_mode=values.get("video_mode", "score"),
+            video_resolution=values.get("video_resolution", "720p"),
             language=values.get("language", "en"),
             include_events=bool(values.get("include_events", False)),
             validate_outputs=bool(values.get("validate_outputs", True)),
@@ -42,7 +44,8 @@ class OutputOptions:
 
     def normalized(self):
         annotation_mode = self.annotation_mode if self.annotation_mode in {"clean", "detailed"} else "clean"
-        video_mode = self.video_mode if self.video_mode in {"score", "piano_roll"} else "score"
+        video_mode = self.video_mode if self.video_mode in {"score", "piano_roll", "showcase"} else "score"
+        video_resolution = self.video_resolution if self.video_resolution in {"720p", "1080p"} else "720p"
         language = self.language if self.language in {"en", "pt"} else "en"
         return OutputOptions(
             annotations=self.annotations,
@@ -52,6 +55,7 @@ class OutputOptions:
             annotation_mode=annotation_mode,
             timbre=self.timbre,
             video_mode=video_mode,
+            video_resolution=video_resolution,
             language=language,
             include_events=self.include_events,
             validate_outputs=self.validate_outputs,

@@ -32,6 +32,10 @@ const state = {
     pendingPlay: null,
     maxNoteDuration: 0,
     lastTimeLabelAt: 0,
+    seekTime: 0,
+    isSeeking: false,
+    wasPlayingBeforeSeek: false,
+    playbackToken: 0,
 };
 
 const els = {
@@ -50,7 +54,9 @@ const els = {
     noteLayer: document.getElementById("note-layer"),
     emptyState: document.getElementById("empty-state"),
     keyboard: document.getElementById("keyboard"),
+    progressBar: document.getElementById("progress-bar"),
     progressFill: document.getElementById("progress-fill"),
+    progressThumb: document.getElementById("progress-thumb"),
     timeLabel: document.getElementById("time-label"),
 };
 
@@ -84,11 +90,12 @@ function updateButtons() {
 }
 
 function playbackTime() {
-    if (!state.isPlaying) return 0;
+    const duration = state.summary?.duration || 0;
+    if (!state.isPlaying) return Math.min(duration, Math.max(0, state.seekTime || 0));
     if (state.audioContext && state.audioStartedAt) {
-        return Math.max(0, state.audioContext.currentTime - state.audioStartedAt);
+        return Math.min(duration, Math.max(0, (state.seekTime || 0) + state.audioContext.currentTime - state.audioStartedAt));
     }
-    return Math.max(0, (performance.now() - state.startedAt) / 1000);
+    return Math.min(duration, Math.max(0, (state.seekTime || 0) + (performance.now() - state.startedAt) / 1000));
 }
 
 function noteHand(trackIndex, midi) {
@@ -285,11 +292,20 @@ function renderNotes() {
     els.noteLayer.appendChild(fragment);
 }
 
+function setProgressVisual(time) {
+    const duration = state.summary?.duration || 0;
+    const pct = duration ? Math.min(100, Math.max(0, (time / duration) * 100)) : 0;
+    els.progressFill.style.transform = `scaleX(${pct / 100})`;
+    els.progressBar.style.setProperty("--progress", `${pct}%`);
+    els.progressBar.setAttribute("aria-valuenow", String(Math.round(pct)));
+    els.timeLabel.textContent = `${formatTime(time)} / ${formatTime(duration)}`;
+}
+
 function refreshLayout() {
     buildKeyboard();
     if (state.summary) {
         renderNotes();
-        if (!state.isPlaying) resetVisuals();
+        if (!state.isPlaying) updateVisuals();
     }
 }
 
@@ -312,8 +328,8 @@ function resetVisuals() {
         }
     });
     state.visibleNoteIndices.clear();
-    els.progressFill.style.transform = "scaleX(0)";
-    els.timeLabel.textContent = `0:00 / ${formatTime(state.summary?.duration || 0)}`;
+    state.seekTime = 0;
+    setProgressVisual(0);
     state.lastTimeLabelAt = 0;
 }
 
@@ -380,12 +396,9 @@ function updateVisuals() {
     state.visibleNoteIndices = nextVisible;
     applyActiveKeys(nextActiveKeys);
 
-    const pct = duration ? Math.min(100, (time / duration) * 100) : 0;
-    els.progressFill.style.transform = `scaleX(${pct / 100})`;
-
     const now = performance.now();
     if (!state.lastTimeLabelAt || now - state.lastTimeLabelAt >= TIME_LABEL_INTERVAL_MS || !state.isPlaying) {
-        els.timeLabel.textContent = `${formatTime(time)} / ${formatTime(duration)}`;
+        setProgressVisual(time);
         state.lastTimeLabelAt = now;
     }
 
@@ -397,6 +410,7 @@ function updateVisuals() {
 async function loadMidiBuffer(buffer, name = "score.mid") {
     state.midiBuffer = buffer.slice(0);
     state.summary = parseMidi(buffer.slice(0));
+    state.seekTime = 0;
     clampMidiRange(state.summary.notes);
     buildKeyboard();
     renderNotes();
@@ -482,10 +496,92 @@ function disposeSynth() {
     state.node = null;
 }
 
+function encodeVariableLength(value) {
+    let buffer = value & 0x7f;
+    const bytes = [];
+    while ((value >>= 7)) {
+        buffer <<= 8;
+        buffer |= ((value & 0x7f) | 0x80);
+    }
+    while (true) {
+        bytes.push(buffer & 0xff);
+        if (buffer & 0x80) {
+            buffer >>= 8;
+        } else {
+            break;
+        }
+    }
+    return bytes;
+}
+
+function asciiBytes(text) {
+    return Array.from(text, (char) => char.charCodeAt(0));
+}
+
+function writeUint16(bytes, value) {
+    bytes.push((value >> 8) & 0xff, value & 0xff);
+}
+
+function writeUint32(bytes, value) {
+    bytes.push((value >> 24) & 0xff, (value >> 16) & 0xff, (value >> 8) & 0xff, value & 0xff);
+}
+
+function buildMidiBufferFromOffset(offsetSeconds) {
+    const notes = state.summary?.notes || [];
+    const ticksPerQuarter = 480;
+    const ticksPerSecond = 960;
+    const offset = Math.max(0, Number(offsetSeconds) || 0);
+    const events = [];
+
+    notes.forEach((note) => {
+        const end = note.time + note.duration;
+        if (end <= offset) return;
+        const startSeconds = Math.max(0, note.time - offset);
+        const endSeconds = Math.max(startSeconds + 0.04, end - offset);
+        const startTick = Math.max(0, Math.round(startSeconds * ticksPerSecond));
+        const endTick = Math.max(startTick + 1, Math.round(endSeconds * ticksPerSecond));
+        const channel = note.hand === "left" ? 1 : 0;
+        const velocity = Math.max(1, Math.min(127, Math.round((note.velocity || 0.75) * 112)));
+        events.push({ tick: startTick, order: 1, data: [0x90 | channel, note.midi & 0x7f, velocity] });
+        events.push({ tick: endTick, order: 0, data: [0x80 | channel, note.midi & 0x7f, 0] });
+    });
+
+    events.sort((a, b) => a.tick - b.tick || a.order - b.order || a.data[1] - b.data[1]);
+
+    const track = [];
+    track.push(...encodeVariableLength(0), 0xff, 0x51, 0x03, 0x07, 0xa1, 0x20);
+    track.push(...encodeVariableLength(0), 0xc0, 0x00);
+    track.push(...encodeVariableLength(0), 0xc1, 0x00);
+
+    let currentTick = 0;
+    events.forEach((event) => {
+        track.push(...encodeVariableLength(Math.max(0, event.tick - currentTick)), ...event.data);
+        currentTick = event.tick;
+    });
+    track.push(...encodeVariableLength(0), 0xff, 0x2f, 0x00);
+
+    const bytes = [];
+    bytes.push(...asciiBytes("MThd"));
+    writeUint32(bytes, 6);
+    writeUint16(bytes, 0);
+    writeUint16(bytes, 1);
+    writeUint16(bytes, ticksPerQuarter);
+    bytes.push(...asciiBytes("MTrk"));
+    writeUint32(bytes, track.length);
+    bytes.push(...track);
+    return new Uint8Array(bytes).buffer;
+}
+
 async function playMidi() {
     if (!state.midiBuffer || !state.soundFontBuffer || state.isPlaying) return;
 
+    const token = state.playbackToken + 1;
+    state.playbackToken = token;
     try {
+        const duration = state.summary?.duration || 0;
+        if (duration && state.seekTime >= duration - 0.03) {
+            state.seekTime = 0;
+        }
         await ensureAudioEngine();
         disposeSynth();
 
@@ -502,7 +598,10 @@ async function playMidi() {
 
         setStatus("Preparing playback");
         await synth.loadSFont(state.soundFontBuffer.slice(0));
-        await synth.addSMFDataToPlayer(state.midiBuffer.slice(0));
+        const playbackBuffer = state.seekTime > 0.03
+            ? buildMidiBufferFromOffset(state.seekTime)
+            : state.midiBuffer.slice(0);
+        await synth.addSMFDataToPlayer(playbackBuffer);
 
         state.isPlaying = true;
         state.startedAt = performance.now();
@@ -514,14 +613,17 @@ async function playMidi() {
         await synth.playPlayer();
         await synth.waitForPlayerStopped();
         await synth.waitForVoicesStopped();
+        if (token !== state.playbackToken) return;
 
         state.isPlaying = false;
+        state.seekTime = state.summary?.duration || playbackTime();
         state.audioStartedAt = 0;
         cancelAnimationFrame(state.animationFrame);
         updateVisuals();
         setStatus("Finished");
         updateButtons();
     } catch (error) {
+        if (token !== state.playbackToken) return;
         state.isPlaying = false;
         state.audioStartedAt = 0;
         cancelAnimationFrame(state.animationFrame);
@@ -533,16 +635,22 @@ async function playMidi() {
 
 function stopMidi() {
     if (!state.isPlaying) return;
+    const current = playbackTime();
     state.isPlaying = false;
+    state.playbackToken += 1;
+    state.seekTime = current;
     cancelAnimationFrame(state.animationFrame);
     disposeSynth();
     setStatus("Stopped");
     updateButtons();
-    resetVisuals();
+    updateVisuals();
 }
 
 function forceStopPlayback() {
+    const current = playbackTime();
     state.isPlaying = false;
+    state.playbackToken += 1;
+    state.seekTime = current;
     cancelAnimationFrame(state.animationFrame);
     disposeSynth();
     if (state.audioContext && state.audioContext.state !== "closed") {
@@ -551,6 +659,58 @@ function forceStopPlayback() {
 }
 
 window.pyclefStopPlayback = forceStopPlayback;
+
+function seekTimeFromPointer(event) {
+    const duration = state.summary?.duration || 0;
+    if (!duration) return 0;
+    const rect = els.progressBar.getBoundingClientRect();
+    const ratio = Math.max(0, Math.min(1, (event.clientX - rect.left) / Math.max(1, rect.width)));
+    return ratio * duration;
+}
+
+function previewSeek(event) {
+    state.seekTime = seekTimeFromPointer(event);
+    state.lastTimeLabelAt = 0;
+    updateVisuals();
+}
+
+function beginSeek(event) {
+    if (!state.summary?.duration) return;
+    state.isSeeking = true;
+    state.wasPlayingBeforeSeek = state.isPlaying;
+    if (state.isPlaying) {
+        state.seekTime = playbackTime();
+        state.isPlaying = false;
+        state.playbackToken += 1;
+        cancelAnimationFrame(state.animationFrame);
+        disposeSynth();
+        updateButtons();
+        setStatus("Seeking");
+    }
+    els.progressBar.classList.add("dragging");
+    els.progressBar.setPointerCapture?.(event.pointerId);
+    previewSeek(event);
+}
+
+function moveSeek(event) {
+    if (!state.isSeeking) return;
+    previewSeek(event);
+}
+
+async function endSeek(event) {
+    if (!state.isSeeking) return;
+    previewSeek(event);
+    state.isSeeking = false;
+    els.progressBar.classList.remove("dragging");
+    els.progressBar.releasePointerCapture?.(event.pointerId);
+    if (state.wasPlayingBeforeSeek) {
+        state.wasPlayingBeforeSeek = false;
+        await playMidi();
+    } else {
+        setStatus(state.midiBuffer && state.soundFontBuffer ? "Ready to play" : "MIDI ready");
+        updateButtons();
+    }
+}
 
 function initEvents() {
     els.selectMidi.addEventListener("click", () => els.midiInput.click());
@@ -562,6 +722,10 @@ function initEvents() {
     els.loadSoundFont.addEventListener("click", loadDefaultSoundFont);
     els.playButton.addEventListener("click", playMidi);
     els.stopButton.addEventListener("click", stopMidi);
+    els.progressBar.addEventListener("pointerdown", beginSeek);
+    els.progressBar.addEventListener("pointermove", moveSeek);
+    els.progressBar.addEventListener("pointerup", endSeek);
+    els.progressBar.addEventListener("pointercancel", endSeek);
     els.volume.addEventListener("input", () => {
         if (state.synth && typeof state.synth.setGain === "function") {
             state.synth.setGain(Number(els.volume.value || 86) / 100);
