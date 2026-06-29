@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
     <title>Documentation | PyClef</title>
-    <meta name="description" content="PyClef installation, guided interface tour, usage and output documentation.">
+    <meta name="description" content="Complete PyClef documentation for installation, desktop workflow, outputs, MIDI playback, scientific reports and Python usage.">
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -22,6 +22,7 @@
             <div class="nav-links">
                 <a href="index.html" data-i18n="nav-home">Home</a>
                 <a href="methodology.html" data-i18n="nav-method">Methodology</a>
+                <a href="download.html" data-i18n="nav-download">Download</a>
                 <a href="docs.html" class="active" data-i18n="nav-docs">Docs</a>
                 <a href="comparison.html" data-i18n="nav-results">Results</a>
             </div>
@@ -34,16 +35,26 @@
     </nav>
 
     <main class="container">
-        <header class="page-hero">
-            <p class="eyebrow" data-i18n="docs-kicker">Documentation</p>
-            <h1 data-i18n="docs-title">Install, run and inspect PyClef outputs.</h1>
-            <p data-i18n="docs-lead">PyClef can be used through the desktop interface or called from Python. The generated results are grouped by score name for easier review.</p>
+        <header class="page-hero docs-hero">
+            <div>
+                <p class="eyebrow" data-i18n="docs-kicker">Documentation</p>
+                <h1 data-i18n="docs-title">Install, run and inspect PyClef outputs.</h1>
+                <p data-i18n="docs-lead">PyClef can be used as a Windows desktop app or from Python. This guide covers installation, processing options, generated files, MIDI playback and review tools.</p>
+                <div class="hero-actions">
+                    <a href="download.html" class="btn-primary" data-i18n="docs-download-cta">Download options</a>
+                    <a href="#python-install" class="btn-secondary" data-i18n="docs-python-cta">Install with pip</a>
+                </div>
+            </div>
+            <div class="docs-hero-shot">
+                <img src="imgs/guide-01-home-dark.png" alt="PyClef desktop home screen in dark mode" class="zoomable-img theme-img theme-img-dark" onclick="openModal(this)">
+                <img src="imgs/guide-01-home-light.png" alt="PyClef desktop home screen in light mode" class="zoomable-img theme-img theme-img-light" onclick="openModal(this)">
+            </div>
         </header>
 
-        <section class="doc-grid">
+        <section id="python-install" class="doc-grid">
             <article class="doc-card">
-                <h3 data-i18n="doc-install-title">Installation</h3>
-                <p data-i18n="doc-install-text">Install the package from PyPI. The model can be downloaded automatically on first use.</p>
+                <h3 data-i18n="doc-install-title">Install from PyPI</h3>
+                <p data-i18n="doc-install-text">Use pip when you want the Python package, command-line entry point and programmatic API.</p>
                 <div class="code-copy-wrap">
                     <button class="copy-code-btn" type="button" data-i18n="copy-code">Copy</button>
                     <pre><code>pip install pyclef</code></pre>
@@ -51,7 +62,11 @@
             </article>
             <article class="doc-card">
                 <h3 data-i18n="doc-launch-title">Launch the app</h3>
-                <p data-i18n="doc-launch-text">Open the desktop workflow from Python or from the package entry point.</p>
+                <p data-i18n="doc-launch-text">Open the desktop interface from the terminal or from a Python script.</p>
+                <div class="code-copy-wrap">
+                    <button class="copy-code-btn" type="button" data-i18n="copy-code">Copy</button>
+                    <pre><code>pyclef</code></pre>
+                </div>
                 <div class="code-copy-wrap">
                     <button class="copy-code-btn" type="button" data-i18n="copy-code">Copy</button>
                     <pre><code>from pyclef import Pyclef
@@ -59,13 +74,11 @@ Pyclef()</code></pre>
                 </div>
             </article>
             <article class="doc-card">
-                <h3 data-i18n="doc-output-title">Outputs</h3>
-                <p data-i18n="doc-output-text">Each run can create annotations, MP3 audio, MIDI and synchronized MP4 video.</p>
-                <pre><code>results_score-name/
-  score-name.mp3
-  score-name.mid
-  score-name.mp4
-  score-name_annotated_p1.jpg</code></pre>
+                <h3 data-i18n="doc-requirements-title">External tools</h3>
+                <p data-i18n="doc-requirements-text">PDF input uses Poppler. MP3/video exports use FFmpeg. SoundFont rendering uses FluidSynth. The desktop diagnostics panel reports what is available.</p>
+                <pre><code>Poppler   -> PDF pages
+FFmpeg    -> MP3 and MP4
+FluidSynth -> SoundFont piano</code></pre>
             </article>
         </section>
 
@@ -73,7 +86,7 @@ Pyclef()</code></pre>
             <div class="section-heading">
                 <p class="eyebrow" data-i18n="guide-kicker">Guided interface tour</p>
                 <h2 data-i18n="guide-title">Desktop processing pipeline</h2>
-                <p data-i18n="guide-lead">The desktop flow moves from score selection to progress tracking and result review. The screenshots adapt to the current website theme.</p>
+                <p data-i18n="guide-lead">The desktop flow moves from score selection to progress tracking and result review. Screenshots adapt to the current website theme.</p>
             </div>
             <div class="desktop-pipeline">
                 <article class="flow-step-card">
@@ -83,192 +96,169 @@ Pyclef()</code></pre>
                         <img src="imgs/guide-01-home-light.png" alt="PyClef home screen in light mode" class="zoomable-img theme-img theme-img-light" onclick="openModal(this)">
                     </figure>
                     <div>
-                        <h3 data-i18n="guide-1-title">Start from Home</h3>
-                        <p data-i18n="guide-1-text">Use the Start button to move from the welcome screen into the score workspace.</p>
+                        <h3 data-i18n="guide-1-title">Home</h3>
+                        <p data-i18n="guide-1-text">Start from a focused welcome screen and move into the score workspace when ready.</p>
                     </div>
                 </article>
                 <article class="flow-step-card">
                     <span class="flow-index">02</span>
                     <figure class="flow-shot">
-                        <img src="imgs/guide-02-scores-empty-dark.png" alt="PyClef score workspace before file selection in dark mode" class="zoomable-img theme-img theme-img-dark" onclick="openModal(this)">
-                        <img src="imgs/guide-02-scores-empty-light.png" alt="PyClef score workspace before file selection in light mode" class="zoomable-img theme-img theme-img-light" onclick="openModal(this)">
+                        <img src="imgs/guide-02-scores-empty-dark.png" alt="Score workspace before file selection in dark mode" class="zoomable-img theme-img theme-img-dark" onclick="openModal(this)">
+                        <img src="imgs/guide-02-scores-empty-light.png" alt="Score workspace before file selection in light mode" class="zoomable-img theme-img theme-img-light" onclick="openModal(this)">
                     </figure>
                     <div>
-                        <h3 data-i18n="guide-2-title">Open Scores</h3>
-                        <p data-i18n="guide-2-text">The Scores page centralizes file selection, BPM, output options, logs and result buttons.</p>
+                        <h3 data-i18n="guide-2-title">Scores</h3>
+                        <p data-i18n="guide-2-text">Select PDF or image files, set BPM and choose how much information PyClef should generate.</p>
                     </div>
                 </article>
                 <article class="flow-step-card">
                     <span class="flow-index">03</span>
                     <figure class="flow-shot">
-                        <img src="imgs/guide-03-scores-selected-dark.png" alt="PyClef score selected and output options in dark mode" class="zoomable-img theme-img theme-img-dark" onclick="openModal(this)">
-                        <img src="imgs/guide-03-scores-selected-light.png" alt="PyClef score selected and output options in light mode" class="zoomable-img theme-img theme-img-light" onclick="openModal(this)">
+                        <img src="imgs/guide-03-scores-selected-dark.png" alt="Selected score and output options in dark mode" class="zoomable-img theme-img theme-img-dark" onclick="openModal(this)">
+                        <img src="imgs/guide-03-scores-selected-light.png" alt="Selected score and output options in light mode" class="zoomable-img theme-img theme-img-light" onclick="openModal(this)">
                     </figure>
                     <div>
-                        <h3 data-i18n="guide-3-title">Choose outputs</h3>
-                        <p data-i18n="guide-3-text">After selecting a PDF or image, enable the outputs you need: annotations, MP3, MIDI or video.</p>
+                        <h3 data-i18n="guide-3-title">Outputs and presets</h3>
+                        <p data-i18n="guide-3-text">Use presets for review, listening or video, then fine-tune annotation, audio, MIDI, video and report options.</p>
                     </div>
                 </article>
                 <article class="flow-step-card">
                     <span class="flow-index">04</span>
                     <figure class="flow-shot">
-                        <img src="imgs/guide-04-processing-dark.png" alt="PyClef processing progress and logs in dark mode" class="zoomable-img theme-img theme-img-dark" onclick="openModal(this)">
-                        <img src="imgs/guide-04-processing-light.png" alt="PyClef processing progress and logs in light mode" class="zoomable-img theme-img theme-img-light" onclick="openModal(this)">
+                        <img src="imgs/guide-04-processing-dark.png" alt="Processing progress and logs in dark mode" class="zoomable-img theme-img theme-img-dark" onclick="openModal(this)">
+                        <img src="imgs/guide-04-processing-light.png" alt="Processing progress and logs in light mode" class="zoomable-img theme-img theme-img-light" onclick="openModal(this)">
                     </figure>
                     <div>
-                        <h3 data-i18n="guide-4-title">Track progress</h3>
-                        <p data-i18n="guide-4-text">The progress bar and log panel show what PyClef is doing during detection, reconstruction and export.</p>
+                        <h3 data-i18n="guide-4-title">Progress</h3>
+                        <p data-i18n="guide-4-text">Follow the progress bar and optional technical logs while detection, inference and export run.</p>
                     </div>
                 </article>
                 <article class="flow-step-card">
                     <span class="flow-index">05</span>
                     <figure class="flow-shot">
-                        <img src="imgs/guide-05-results-dark.png" alt="PyClef completed processing and result buttons in dark mode" class="zoomable-img theme-img theme-img-dark" onclick="openModal(this)">
-                        <img src="imgs/guide-05-results-light.png" alt="PyClef completed processing and result buttons in light mode" class="zoomable-img theme-img theme-img-light" onclick="openModal(this)">
+                        <img src="imgs/guide-05-results-dark.png" alt="Completed processing and result buttons in dark mode" class="zoomable-img theme-img theme-img-dark" onclick="openModal(this)">
+                        <img src="imgs/guide-05-results-light.png" alt="Completed processing and result buttons in light mode" class="zoomable-img theme-img theme-img-light" onclick="openModal(this)">
                     </figure>
                     <div>
-                        <h3 data-i18n="guide-5-title">Open results</h3>
-                        <p data-i18n="guide-5-text">When processing finishes, use the result buttons to open the folder or generated files.</p>
+                        <h3 data-i18n="guide-5-title">Results</h3>
+                        <p data-i18n="guide-5-text">Open the result folder, annotated pages, audio, MIDI, video and scientific report from one place.</p>
                     </div>
                 </article>
-                <article class="flow-step-card">
-                    <span class="flow-index">06</span>
-                    <figure class="flow-shot">
-                        <img src="imgs/guide-06-about-dark.png" alt="PyClef about screen in dark mode" class="zoomable-img theme-img theme-img-dark" onclick="openModal(this)">
-                        <img src="imgs/guide-06-about-light.png" alt="PyClef about screen in light mode" class="zoomable-img theme-img theme-img-light" onclick="openModal(this)">
-                    </figure>
-                    <div>
-                        <h3 data-i18n="guide-6-title">Learn about PyClef</h3>
-                        <p data-i18n="guide-6-text">The About page summarizes the recognition, playback and review goals of the project.</p>
-                    </div>
-                </article>
+            </div>
+        </section>
+
+        <section class="reference-section">
+            <div class="section-heading">
+                <p class="eyebrow" data-i18n="reference-kicker">Function reference</p>
+                <h2 data-i18n="reference-title">What each desktop option does.</h2>
+                <p data-i18n="reference-lead">PyClef keeps common actions visible and places experimental controls in advanced options.</p>
+            </div>
+            <div class="reference-grid">
+                <article><i class="fas fa-file-import"></i><h3 data-i18n="ref-select-title">Select scores</h3><p data-i18n="ref-select-text">Loads PDF, PNG, JPG or JPEG files and creates a result folder from the input name.</p></article>
+                <article><i class="fas fa-gauge-high"></i><h3 data-i18n="ref-bpm-title">BPM</h3><p data-i18n="ref-bpm-text">Defines the tempo used for MIDI, MP3 and synchronized video timing.</p></article>
+                <article><i class="fas fa-layer-group"></i><h3 data-i18n="ref-presets-title">Presets</h3><p data-i18n="ref-presets-text">Quickly configures the workflow for review, listening, video sharing or full export.</p></article>
+                <article><i class="fas fa-pen-nib"></i><h3 data-i18n="ref-annotations-title">Annotated score</h3><p data-i18n="ref-annotations-text">Exports labeled score images. Clean mode groups close notes; detailed mode includes confidence information.</p></article>
+                <article><i class="fas fa-volume-high"></i><h3 data-i18n="ref-audio-title">MP3 audio</h3><p data-i18n="ref-audio-text">Renders a listening file using the internal synthesizer or SoundFont piano when available.</p></article>
+                <article><i class="fas fa-music"></i><h3 data-i18n="ref-midi-title">MIDI</h3><p data-i18n="ref-midi-text">Exports note events for playback, inspection and use in external music software.</p></article>
+                <article><i class="fas fa-film"></i><h3 data-i18n="ref-video-title">Video style</h3><p data-i18n="ref-video-text">Creates score video, piano-roll video or a combined score plus piano-roll review video.</p></article>
+                <article><i class="fas fa-chart-simple"></i><h3 data-i18n="ref-report-title">Scientific report</h3><p data-i18n="ref-report-text">Summarizes confidence, pitch classes, hand distribution, durations and review recommendations.</p></article>
+                <article><i class="fas fa-wand-magic-sparkles"></i><h3 data-i18n="ref-advanced-title">Advanced recognition</h3><p data-i18n="ref-advanced-text">Optional preprocessing and staff-crop recovery can help dense scans while keeping review data visible.</p></article>
             </div>
         </section>
 
         <section class="outputs-section">
             <div class="section-heading output-heading">
                 <p class="eyebrow" data-i18n="outputs-kicker">Generated outputs</p>
-                <h2 data-i18n="outputs-title">Inspect the score as image, sound, MIDI and video.</h2>
-                <p data-i18n="outputs-lead">PyClef keeps the outputs separate so each result can be reviewed with the right level of detail.</p>
+                <h2 data-i18n="outputs-title">Review the files PyClef actually exports.</h2>
+                <p data-i18n="outputs-lead">Each run creates a result folder with annotated pages and the optional playback files selected in the interface.</p>
             </div>
-
             <div class="outputs-grid">
                 <article class="output-card output-card-large">
-                    <img src="imgs/output-annotation-clean.jpg" alt="Clean PyClef annotation crop focused on musical staves" class="zoomable-img" onclick="openModal(this)">
-                    <div>
-                        <span class="output-badge" data-i18n="output-clean-badge">Annotated score</span>
-                        <h3 data-i18n="output-clean-title">Clean view</h3>
-                        <p data-i18n="output-clean-text">A compact notation overlay for quick visual inspection of pitch names and staff grouping.</p>
-                    </div>
+                    <img src="imgs/output-annotation-clean.jpg" alt="Clean annotation crop focused on musical staves" class="zoomable-img" onclick="openModal(this)">
+                    <div><span class="output-badge" data-i18n="output-clean-badge">Annotated score</span><h3 data-i18n="output-clean-title">Detected notes on the score</h3><p data-i18n="output-clean-text">The annotated page keeps the original staff visible while adding note names, hand colors and review markers.</p></div>
                 </article>
-
                 <article class="output-card output-card-large">
-                    <img src="imgs/output-annotation-detailed.jpg" alt="Detailed PyClef annotation crop focused on labeled notes" class="zoomable-img" onclick="openModal(this)">
-                    <div>
-                        <span class="output-badge" data-i18n="output-detailed-badge">Annotation detail</span>
-                        <h3 data-i18n="output-detailed-title">Detailed mode</h3>
-                        <p data-i18n="output-detailed-text">The detailed annotation view expands labels with confidence values for closer inspection.</p>
-                    </div>
+                    <img src="imgs/output-annotation-detailed.jpg" alt="Detailed annotation crop focused on labeled notes" class="zoomable-img" onclick="openModal(this)">
+                    <div><span class="output-badge" data-i18n="output-detailed-badge">Detailed annotation</span><h3 data-i18n="output-detailed-title">Confidence and review cues</h3><p data-i18n="output-detailed-text">Detailed labels expose confidence percentages and mark notes that may deserve a closer manual check.</p></div>
                 </article>
-
                 <article class="output-card">
-                    <div class="audio-visual" aria-hidden="true">
-                        <span></span><span></span><span></span><span></span><span></span><span></span>
-                    </div>
-                    <div>
-                        <span class="output-badge">MP3</span>
-                        <h3 data-i18n="output-audio-title">Rendered audio</h3>
-                        <p data-i18n="output-audio-text">Generate an audio file for listening checks, sharing and quick musical review.</p>
-                    </div>
+                    <div class="audio-visual" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span></div>
+                    <div><span class="output-badge">MP3</span><h3 data-i18n="output-audio-title">Rendered audio</h3><p data-i18n="output-audio-text">Generate an audio file for listening checks, sharing and quick musical review.</p></div>
                 </article>
-
                 <article class="output-card output-card-video">
-                    <img src="imgs/output-video-detail.gif" alt="Animated PyClef video detail crop focused on active notes" class="zoomable-img" onclick="openModal(this)">
-                    <div>
-                        <span class="output-badge">MP4</span>
-                        <h3 data-i18n="output-video-title">Synchronized video</h3>
-                        <p data-i18n="output-video-text">A cropped animated preview emphasizes active notes so the synchronized MP4 is easier to understand.</p>
-                    </div>
+                    <img src="imgs/output-video-detail.gif" alt="Animated video detail crop focused on active notes" class="zoomable-img" onclick="openModal(this)">
+                    <div><span class="output-badge">MP4</span><h3 data-i18n="output-video-title">Score plus piano-roll video</h3><p data-i18n="output-video-text">The synchronized video can combine the active score region with a piano-roll view, making playback easier to study.</p></div>
                 </article>
-
                 <article class="output-card output-card-midi">
-                    <img src="imgs/midi-player-preview.gif" alt="Animated PyClef MIDI Player waterfall playback" class="zoomable-img" onclick="openModal(this)">
-                    <div>
-                        <span class="output-badge" data-i18n="midi-kicker">MIDI Player</span>
-                        <h3 data-i18n="midi-title">Review generated MIDI files with a piano-roll view.</h3>
-                        <p data-i18n="midi-lead">PyClef loads the generated MIDI, applies the piano SoundFont automatically and shows timing with a waterfall view and responsive keyboard.</p>
-                    </div>
+                    <img src="imgs/midi-player-preview.gif" alt="Animated MIDI Player waterfall playback" class="zoomable-img" onclick="openModal(this)">
+                    <div><span class="output-badge" data-i18n="midi-kicker">MIDI Player</span><h3 data-i18n="midi-title">Review generated MIDI files with a piano-roll view.</h3><p data-i18n="midi-lead">The player loads generated MIDI, applies the piano SoundFont and shows timing with a waterfall view and responsive keyboard.</p></div>
                 </article>
             </div>
+        </section>
 
-            <div class="output-feature-strip">
-                <article>
-                    <i class="fas fa-wave-square"></i>
-                    <h3 data-i18n="midi-card-1-title">Waterfall playback</h3>
-                    <p data-i18n="midi-card-1-text">Notes fall toward the keyboard in sync with playback, making timing problems easier to inspect.</p>
-                </article>
-                <article>
-                    <i class="fas fa-keyboard"></i>
-                    <h3 data-i18n="midi-card-2-title">Dynamic keyboard</h3>
-                    <p data-i18n="midi-card-2-text">The piano range adapts to the MIDI file and labels white keys with note names.</p>
-                </article>
-                <article>
-                    <i class="fas fa-palette"></i>
-                    <h3 data-i18n="midi-card-3-title">Hand-aware colors</h3>
-                    <p data-i18n="midi-card-3-text">Right-hand and left-hand notes use different colors, including darker tones for black-key notes.</p>
-                </article>
+        <section class="midi-doc-section">
+            <div class="midi-copy">
+                <p class="eyebrow" data-i18n="midi-kicker">MIDI Player</p>
+                <h2 data-i18n="midi-title">Review generated MIDI files with a piano-roll view.</h2>
+                <p data-i18n="midi-lead">Use the integrated player to inspect timing, hand separation and note density before sharing the final result.</p>
+                <div class="midi-feature-list">
+                    <article><i class="fas fa-wave-square"></i><h3 data-i18n="midi-card-1-title">Waterfall playback</h3><p data-i18n="midi-card-1-text">Notes fall toward the keyboard in sync with playback, making timing problems easier to inspect.</p></article>
+                    <article><i class="fas fa-keyboard"></i><h3 data-i18n="midi-card-2-title">Dynamic keyboard</h3><p data-i18n="midi-card-2-text">The piano range adapts to the MIDI file and labels white keys with note names.</p></article>
+                    <article><i class="fas fa-palette"></i><h3 data-i18n="midi-card-3-title">Hand-aware colors</h3><p data-i18n="midi-card-3-text">Right-hand and left-hand notes use different colors, including darker tones for black-key notes.</p></article>
+                </div>
+            </div>
+            <div class="midi-showcase">
+                <img src="imgs/guide-08-midi-playing.png" alt="PyClef MIDI Player window" class="zoomable-img" onclick="openModal(this)">
+                <img src="imgs/midi-player-preview.gif" alt="PyClef MIDI Player animated preview" class="zoomable-img" onclick="openModal(this)">
             </div>
         </section>
 
         <section>
             <div class="section-heading">
-                <p class="eyebrow" data-i18n="usage-kicker">Recommended workflow</p>
-                <h2 data-i18n="usage-title">A short path from score to reviewable result.</h2>
+                <p class="eyebrow" data-i18n="api-kicker">Python API</p>
+                <h2 data-i18n="api-title">Use PyClef from your own scripts.</h2>
+                <p data-i18n="api-lead">The desktop app is the easiest entry point, but the processing engine can also be called programmatically.</p>
             </div>
-            <div class="timeline">
-                <div class="timeline-card">
-                    <span>01</span>
-                    <div>
-                        <h3 data-i18n="usage-1-title">Prepare the score</h3>
-                        <p data-i18n="usage-1-text">Use a clear PDF, PNG or JPG. Higher quality images improve symbol detection.</p>
-                    </div>
-                </div>
-                <div class="timeline-card">
-                    <span>02</span>
-                    <div>
-                        <h3 data-i18n="usage-2-title">Choose outputs</h3>
-                        <p data-i18n="usage-2-text">Generate only annotations for fast inspection, or include audio/MIDI/video when needed.</p>
-                    </div>
-                </div>
-                <div class="timeline-card">
-                    <span>03</span>
-                    <div>
-                        <h3 data-i18n="usage-3-title">Review annotations</h3>
-                        <p data-i18n="usage-3-text">Use the labeled score image to verify note naming and structural interpretation.</p>
-                    </div>
-                </div>
-                <div class="timeline-card">
-                    <span>04</span>
-                    <div>
-                        <h3 data-i18n="usage-4-title">Inspect playback</h3>
-                        <p data-i18n="usage-4-text">Use MIDI, MP3 and video to audit the musical reconstruction from different perspectives.</p>
-                    </div>
-                </div>
+            <div class="api-grid">
+                <article class="doc-card">
+                    <h3><code>Pyclef()</code></h3>
+                    <p data-i18n="api-pyclef-text">Starts the desktop application from Python.</p>
+                    <div class="code-copy-wrap"><button class="copy-code-btn" type="button" data-i18n="copy-code">Copy</button><pre><code>from pyclef import Pyclef
+Pyclef()</code></pre></div>
+                </article>
+                <article class="doc-card">
+                    <h3><code>process_score_files()</code></h3>
+                    <p data-i18n="api-process-text">Runs the OMR pipeline and returns paths for generated outputs.</p>
+                    <div class="code-copy-wrap"><button class="copy-code-btn" type="button" data-i18n="copy-code">Copy</button><pre><code>from pyclef import process_score_files
+
+result = process_score_files(
+    ["score.pdf"],
+    bpm=90,
+    output_options={
+        "annotations": True,
+        "audio": True,
+        "midi": True,
+        "video": False,
+        "scientific_report": True,
+    },
+)</code></pre></div>
+                </article>
+                <article class="doc-card">
+                    <h3><code>collect_environment_diagnostics()</code></h3>
+                    <p data-i18n="api-diagnostics-text">Checks whether model files, PDF tools, FFmpeg, SoundFont and FluidSynth are available.</p>
+                    <div class="code-copy-wrap"><button class="copy-code-btn" type="button" data-i18n="copy-code">Copy</button><pre><code>from pyclef import collect_environment_diagnostics
+
+for check in collect_environment_diagnostics("en"):
+    print(check.name, check.status)</code></pre></div>
+                </article>
             </div>
         </section>
 
-        <section class="citation-box">
-            <p class="eyebrow" data-i18n="cite-kicker">Citation</p>
-            <h2 data-i18n="cite-title">Cite PyClef</h2>
-            <p data-i18n="cite-text">If PyClef helps your work, cite the project. The MIRP paper will be available soon.</p>
-            <pre><code>Silvestre, V. F., & Martins, S. A. M. (2026).
-PyClef: Reconhecimento Óptico de Partituras com MIRP.</code></pre>
-        </section>
     </main>
 
     <footer class="footer-main">
         <div class="container footer-content">
-            <span>&copy; 2026 PyClef, by Vinícius Silvestre</span>
+            <span>&copy; 2026 PyClef, by Vinicius Silvestre</span>
             <span data-i18n="footer-text">Python toolkit for Optical Music Recognition.</span>
         </div>
     </footer>

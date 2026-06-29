@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <title>Download | PyClef</title>
+    <meta name="description" content="Download PyClef for Windows or install the Python package from PyPI.">
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="imgs/logo_black.png">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container nav-content">
+            <a href="index.html" class="nav-brand"><img src="imgs/logo_black.png" alt="PyClef" class="nav-logo"><span>PyClef</span></a>
+            <button id="mobile-menu-toggle" class="mobile-menu-toggle" type="button" aria-label="Open navigation menu" aria-expanded="false">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="nav-links">
+                <a href="index.html" data-i18n="nav-home">Home</a>
+                <a href="methodology.html" data-i18n="nav-method">Methodology</a>
+                <a href="download.html" class="active" data-i18n="nav-download">Download</a>
+                <a href="docs.html" data-i18n="nav-docs">Docs</a>
+                <a href="comparison.html" data-i18n="nav-results">Results</a>
+            </div>
+            <div class="nav-actions">
+                <button id="lang-switch" class="btn-ghost" aria-label="Change language"><img src="https://flagcdn.com/w20/br.png" alt="Brasil" class="flag-img"><img src="https://flagcdn.com/w20/us.png" alt="USA" class="flag-img"><span id="lang-text">EN</span></button>
+                <button id="theme-switch" class="btn-ghost icon-btn" aria-label="Change theme"><i id="theme-icon" class="fas fa-moon"></i></button>
+                <a href="https://github.com/viniciusfs14/PyClef" target="_blank" class="btn-github"><i class="fab fa-github"></i><span>GitHub</span></a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
+        <header class="page-hero download-hero">
+            <div>
+                <p class="eyebrow" data-i18n="download-page-kicker">Download</p>
+                <h1 data-i18n="download-page-title">Choose how you want to run PyClef.</h1>
+                <p data-i18n="download-page-lead">Use the Windows setup for the quickest desktop test, or install the Python package when you want the API and command-line workflow.</p>
+            </div>
+            <div class="download-hero-art" aria-hidden="true">
+                <img src="imgs/logo_black.png" alt="" class="theme-img theme-img-dark">
+                <img src="imgs/logo_white.png" alt="" class="theme-img theme-img-light">
+            </div>
+        </header>
+
+        <section class="download-choice-grid">
+            <article class="download-choice-card featured">
+                <div class="download-choice-icon windows-mark" aria-hidden="true">
+                    <svg viewBox="0 0 48 48" role="img">
+                        <path d="M5 10.8 22 8.4v14.2H5V10.8Z"></path>
+                        <path d="M24.7 8 43 5.4v17.2H24.7V8Z"></path>
+                        <path d="M5 25.4h17v14.2L5 37.2V25.4Z"></path>
+                        <path d="M24.7 25.4H43v17.2L24.7 40V25.4Z"></path>
+                    </svg>
+                </div>
+                <p class="eyebrow" data-i18n="download-windows-kicker">Windows setup</p>
+                <h2 data-i18n="download-windows-title">Download PyClef and test it now on your Windows computer.</h2>
+                <p data-i18n="download-windows-text">Recommended if you want the desktop interface without preparing a Python environment first.</p>
+                <div class="download-card-actions">
+                    <a class="btn-primary btn-with-icon" href="https://github.com/viniciusfs14/PyClef/releases/download/v1.0.8/PyClef-Setup-1.0.8.exe">
+                        <svg class="btn-windows-icon" viewBox="0 0 48 48" aria-hidden="true">
+                            <path d="M5 10.8 22 8.4v14.2H5V10.8Z"></path>
+                            <path d="M24.7 8 43 5.4v17.2H24.7V8Z"></path>
+                            <path d="M5 25.4h17v14.2L5 37.2V25.4Z"></path>
+                            <path d="M24.7 25.4H43v17.2L24.7 40V25.4Z"></path>
+                        </svg>
+                        <span data-i18n="download-windows-button">Download Windows setup</span>
+                    </a>
+                </div>
+                <p class="download-note" data-i18n="download-windows-note">The installer is distributed through GitHub Releases because it is a large file.</p>
+            </article>
+
+            <article class="download-choice-card">
+                <div class="download-choice-icon python-mark" aria-hidden="true">
+                    <i class="fab fa-python"></i>
+                </div>
+                <p class="eyebrow" data-i18n="download-python-kicker">Python package</p>
+                <h2 data-i18n="download-python-title">Install PyClef from PyPI.</h2>
+                <p data-i18n="download-python-text">Use this path when you want to call PyClef from scripts, notebooks or a terminal.</p>
+                <div class="code-copy-wrap">
+                    <button class="copy-code-btn" type="button" data-i18n="copy-code">Copy</button>
+                    <pre><code>pip install pyclef</code></pre>
+                </div>
+                <div class="download-card-actions">
+                    <a class="btn-primary" href="docs.html#python-install" data-i18n="download-python-button">Open Python guide</a>
+                </div>
+            </article>
+        </section>
+
+        <section class="download-next-steps">
+            <div class="section-heading">
+                <p class="eyebrow" data-i18n="download-steps-kicker">Next steps</p>
+                <h2 data-i18n="download-steps-title">After installation, open a score and generate your first outputs.</h2>
+            </div>
+            <div class="reference-grid">
+                <article><i class="fas fa-file-import"></i><h3 data-i18n="download-step-1-title">Choose a score</h3><p data-i18n="download-step-1-text">Use a PDF, PNG or JPG with clear staff lines and readable notation.</p></article>
+                <article><i class="fas fa-sliders"></i><h3 data-i18n="download-step-2-title">Pick outputs</h3><p data-i18n="download-step-2-text">Start with annotations, then add MP3, MIDI or synchronized video when needed.</p></article>
+                <article><i class="fas fa-circle-play"></i><h3 data-i18n="download-step-3-title">Review playback</h3><p data-i18n="download-step-3-text">Use the MIDI player and MP4 preview to inspect timing and note grouping.</p></article>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer-main">
+        <div class="container footer-content">
+            <span>&copy; 2026 PyClef, by Vinicius Silvestre</span>
+            <span data-i18n="footer-text">Python toolkit for Optical Music Recognition.</span>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
