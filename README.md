@@ -19,8 +19,8 @@
   <img alt="Python" src="https://img.shields.io/badge/python-3.10%2B-40d6ff">
   <img alt="Platform" src="https://img.shields.io/badge/platform-Windows-40d6ff">
   <img alt="Status" src="https://img.shields.io/badge/status-alpha-101827">
-  <a href="https://pypi.org/project/pyclef/">
-    <img alt="Downloads" src="https://img.shields.io/pypi/dm/pyclef?color=40d6ff">
+  <a href="https://pepy.tech/projects/pyclef">
+    <img alt="PyPI Downloads" src="https://static.pepy.tech/personalized-badge/pyclef?period=monthly&units=ABBREVIATION&left_color=GREEN&right_color=BLUE&left_text=downloads%2Fmonth">
   </a>
 </p>
 
