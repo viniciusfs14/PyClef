@@ -20,8 +20,11 @@
   <img alt="Platform" src="https://img.shields.io/badge/platform-Windows-40d6ff">
   <img alt="Status" src="https://img.shields.io/badge/status-alpha-101827">
   <a href="https://pepy.tech/projects/pyclef">
-    <img alt="PyPI Downloads" src="https://static.pepy.tech/personalized-badge/pyclef?period=monthly&units=ABBREVIATION&left_color=GREEN&right_color=BLUE&left_text=downloads%2Fmonth">
-  </a>
+  <img
+    alt="PyPI Downloads"
+    src="https://static.pepy.tech/personalized-badge/pyclef?period=total&units=INTERNATIONAL_SYSTEM&left_color=BLACK&right_color=GREEN&left_text=downloads"
+  >
+</a>
 </p>
 
 <p align="center">
